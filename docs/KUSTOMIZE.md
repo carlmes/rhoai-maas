@@ -6,9 +6,9 @@ This repo uses [Kustomize](https://kustomize.io/) to install Red Hat OpenShift A
 
 - OpenShift 4.x cluster with admin access
 - [kubectl](https://kubernetes.io/docs/tasks/tools/) (with built-in Kustomize) or standalone `kustomize`
-- **Optional but recommended for full stack:** Install these from OperatorHub (or equivalent) before or in parallel:
-  - **Connectivity Link** (for service-to-service connectivity)
-  - **Red Hat OpenShift Service Mesh 3** (required for gateway/auth flows used by MaaS)
+- **Optional but recommended for full stack:** Install from OperatorHub before or in parallel if not already present:
+  - **Red Hat OpenShift Service Mesh 3** (with Gateway API enabled; required for gateway/auth flows used by MaaS)
+  - **cert-manager Operator for Red Hat OpenShift** (required by Connectivity Link for TLS)
 
 ## Repository Layout
 
@@ -17,7 +17,8 @@ This repo uses [Kustomize](https://kustomize.io/) to install Red Hat OpenShift A
 ├── base/                    # Reusable building blocks
 │   ├── operators/           # OLM subscriptions and namespaces
 │   │   ├── nfd/             # Node Feature Discovery
-│   │   ├── nvidia/           # NVIDIA GPU Operator
+│   │   ├── nvidia/          # NVIDIA GPU Operator
+│   │   ├── connectivity-link/  # Red Hat Connectivity Link (Kuadrant/rhcl-operator)
 │   │   └── rhoai/           # Red Hat OpenShift AI 3
 │   └── instances/           # Operator instances and app resources
 │       ├── nfd/             # NFD instance (NodeFeatureDiscovery CR)
@@ -27,7 +28,7 @@ This repo uses [Kustomize](https://kustomize.io/) to install Red Hat OpenShift A
 │       ├── dsc/             # DataScienceCluster (RHOAI core)
 │       └── maas/            # MaaS namespace + API, routes, auth, rate limits
 ├── overlays/
-│   ├── 01-operators/        # NFD, NVIDIA, RHOAI operators
+│   ├── 01-operators/        # NFD, NVIDIA, Connectivity Link, RHOAI operators
 │   ├── 02-nfd-nvidia-instances/  # NFD instance + GPU ClusterPolicy
 │   ├── 03-kuadrant/         # Kuadrant for gateway auth
 │   ├── 04-gateway/          # Gateway + GatewayClass
@@ -46,9 +47,9 @@ Apply overlays **in order** and wait for each phase to be ready before the next.
 
 | Phase | Overlay | What it does |
 |-------|---------|---------------|
-| 1 | `overlays/01-operators` | Installs NFD, NVIDIA GPU, and RHOAI operators via OLM |
+| 1 | `overlays/01-operators` | Installs NFD, NVIDIA GPU, Connectivity Link, and RHOAI operators via OLM |
 | 2 | `overlays/02-nfd-nvidia-instances` | Creates NFD instance and NVIDIA ClusterPolicy (GPU nodes) |
-| 3 | `overlays/03-kuadrant` | Creates `kuadrant-system` namespace and Kuadrant CR |
+| 3 | `overlays/03-kuadrant` | Creates Kuadrant CR in `kuadrant-system` (namespace created in phase 1 by Connectivity Link) |
 | 4 | `overlays/04-gateway` | Creates GatewayClass and Gateway for OpenShift AI inference |
 | 5 | `overlays/05-dsc` | Creates DataScienceCluster (KServe, dashboard, workbenches, etc.) |
 | 6 | `overlays/06-maas` | Creates MaaS namespace, API, HTTPRoutes, AuthPolicy, RateLimitPolicy |
@@ -61,7 +62,7 @@ export KUBECONFIG=...   # or oc login
 
 # 1. Operators
 kustomize build overlays/01-operators | oc apply -f -
-# Wait for NFD, NVIDIA, and RHOAI operators to be installed and ready (OperatorHub / oc get csv -A).
+# Wait for NFD, NVIDIA, Connectivity Link, and RHOAI operators to be installed and ready (oc get csv -A).
 
 # 2. NFD + NVIDIA instances
 kustomize build overlays/02-nfd-nvidia-instances | oc apply -f -
@@ -134,8 +135,9 @@ Then: `kustomize build overlays/prod | oc apply -f -`
 |-----------|--------|
 | **NFD** | Node feature discovery (e.g. PCI device labels for GPU nodes). |
 | **NVIDIA GPU Operator** | GPU drivers, device plugin, DCGM, toolkit on GPU nodes. |
+| **Connectivity Link** | Red Hat Connectivity Link (rhcl-operator); provides Kuadrant, Authorino, Limitador, DNS. Installed in `kuadrant-system`. |
 | **RHOAI 3** | Red Hat OpenShift AI operator (RHODS); provides DataScienceCluster, KServe, etc. |
-| **Kuadrant** | Auth (Authorino) and rate limiting for the gateway. |
+| **Kuadrant** | Kuadrant CR (from overlay 03); configures auth and rate limiting for the gateway. |
 | **Gateway / GatewayClass** | OpenShift ingress and KServe inference gateway. |
 | **DataScienceCluster** | Enables KServe, model registry, workbenches, dashboard, pipelines, etc. |
 | **MaaS** | Models-as-a-Service API, tier-based access, and rate limits. |
