@@ -6,7 +6,6 @@ metadata:
   namespace: openshift-nfd
 spec:
   operand:
-    image: 'registry.redhat.io/openshift4/ose-node-feature-discovery-rhel9@sha256:5c9a97a7c1ebc677d1280b6ba5bdbf291f9dd288f77656a51c02fc3b33eb419b'
     imagePullPolicy: IfNotPresent
     servicePort: 12000
   workerConfig:
