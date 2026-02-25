@@ -14,31 +14,31 @@ This repo uses [Kustomize](https://kustomize.io/) to install Red Hat OpenShift A
 
 ```
 .
-├── base/                    # Reusable building blocks
-│   ├── operators/           # OLM subscriptions and namespaces
-│   │   ├── nfd/             # Node Feature Discovery
-│   │   ├── nvidia/          # NVIDIA GPU Operator
-│   │   ├── connectivity-link/  # Red Hat Connectivity Link (Kuadrant/rhcl-operator)
-│   │   └── rhoai/           # Red Hat OpenShift AI 3
-│   └── instances/           # Operator instances and app resources
-│       ├── nfd/             # NFD instance (NodeFeatureDiscovery CR)
-│       ├── nvidia/          # NVIDIA ClusterPolicy
-│       ├── kuadrant/        # Kuadrant namespace + Kuadrant CR
-│       ├── gateway/         # GatewayClass + Gateway (OpenShift AI inference)
-│       ├── dsc/             # DataScienceCluster (RHOAI core)
-│       └── maas/            # MaaS namespace + API, routes, auth, rate limits
+├── base/                         # Reusable building blocks
+│   ├── operators/                # OLM subscriptions and namespaces
+│   │   ├── nfd/                  # Node Feature Discovery
+│   │   ├── nvidia/               # NVIDIA GPU Operator
+│   │   ├── connectivity-link/    # Red Hat Connectivity Link (Kuadrant/rhcl-operator)
+│   │   └── rhoai/                # Red Hat OpenShift AI 3
+│   └── instances/                # Operator instances and app resources
+│       ├── nfd/                  # NFD instance (NodeFeatureDiscovery CR)
+│       ├── nvidia/               # NVIDIA ClusterPolicy
+│       ├── kuadrant/             # Kuadrant namespace + Kuadrant CR
+│       ├── gateway/              # GatewayClass + Gateway (OpenShift AI inference)
+│       ├── dsc/                  # DataScienceCluster (RHOAI core)
+│       └── maas/                 # MaaS namespace + API, routes, auth, rate limits
 ├── overlays/
-│   ├── 01-operators/        # NFD, NVIDIA, Connectivity Link, RHOAI operators
+│   ├── 01-operators/             # NFD, NVIDIA, Connectivity Link, RHOAI operators
 │   ├── 02-nfd-nvidia-instances/  # NFD instance + GPU ClusterPolicy
-│   ├── 03-kuadrant/         # Kuadrant for gateway auth
-│   ├── 04-gateway/          # Gateway + GatewayClass
-│   ├── 05-dsc/              # DataScienceCluster
-│   ├── 06-maas/             # MaaS API and policies
-│   └── full/                # All of the above in one overlay (no ordering)
-├── operators/               # Legacy raw manifests (kept for reference)
-├── instances/               # Legacy raw manifests (kept for reference)
+│   ├── 03-kuadrant/              # Kuadrant for gateway auth
+│   ├── 04-gateway/               # Gateway + GatewayClass
+│   ├── 05-dsc/                   # DataScienceCluster
+│   ├── 06-maas/                  # MaaS API and policies
+│   └── full/                     # All of the above in one overlay (no ordering)
+├── operators/                    # Legacy raw manifests (kept for reference)
+├── instances/                    # Legacy raw manifests (kept for reference)
 └── docs/
-    └── KUSTOMIZE.md         # This file
+    └── KUSTOMIZE.md              # This file
 ```
 
 ## Install Order (Phased Install — Recommended)
