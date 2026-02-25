@@ -1,0 +1,10 @@
+# Apply first: installs NFD, NVIDIA GPU, and RHOAI operators.
+# Prerequisites: OpenShift cluster with OLM; install Connectivity Link and
+# Service Mesh 3 from OperatorHub if required by your environment.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base/operators/nfd
+  - ../../base/operators/nvidia
+  - ../../base/operators/rhoai
