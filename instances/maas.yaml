@@ -313,14 +313,14 @@ spec:
   - allowedRoutes:
       namespaces:
         from: All
-    hostname: maas.apps.cluster-m5lz8.m5lz8.sandbox937.opentlc.com
+    hostname: maas.apps.cluster-zjmh9.zjmh9.sandbox2661.opentlc.com
     name: http
     port: 80
     protocol: HTTP
   - allowedRoutes:
       namespaces:
         from: All
-    hostname: maas.apps.cluster-m5lz8.m5lz8.sandbox937.opentlc.com
+    hostname: maas.apps.cluster-zjmh9.zjmh9.sandbox2661.opentlc.com
     name: https
     port: 443
     protocol: HTTPS

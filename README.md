@@ -29,7 +29,8 @@ If you prefer to apply raw manifests by hand:
 
 1. **Operators** (in order): NFD, NVIDIA GPU, Connectivity Link, Service Mesh 3, then RHOAI 3 — from OperatorHub or apply `operators/nfd.yaml`, `operators/nvidia.yaml`, `operators/rhoai.yaml`.
 2. **NFD and GPU policy:** apply `instances/nfd-instance.yaml`, then `instances/nvidia-cp.yaml`.
-3. **Kuadrant:** apply `instances/kuadrant-ns.yaml`, then `instances/kuadrant.yaml`.
+3. **Kuadrant:** apply `instances/kuadrant.yaml`.
 4. **Gateway:** apply `instances/gatewayclass.yaml` and `instances/gateway.yaml`.
 5. **DataScienceCluster:** apply `instances/datasciencecluster.yaml`.
 6. **MaaS:** apply `instances/maas-ns.yaml`, then `instances/maas.yaml`.
+Note: update maas.yaml hostnames
