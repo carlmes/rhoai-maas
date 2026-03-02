@@ -95,6 +95,7 @@ kustomize build overlays/full | oc apply -f -
 - **RHOAI channel:** Edit `base/operators/rhoai/rhoai.yaml` and change `spec.channel` (e.g. `fast-3.x`).
 - **NVIDIA ClusterPolicy:** Edit `base/instances/nvidia/nvidia-cp.yaml` (driver, MIG, toolkit, etc.).
 - **DataScienceCluster components:** Edit `base/instances/dsc/datasciencecluster.yaml` to enable/disable or tune components (KServe, workbenches, dashboard, etc.).
+- **GenAI Playground:** Enabled by default via `base/instances/dsc/odh-dashboard-config-genaistudio.yaml` (OdhDashboardConfig with `genAiStudio: true`). Requires Llama Stack Operator managed in the DSC (already set).
 - **MaaS hostname / TLS:** The MaaS Gateway in `base/instances/maas/maas.yaml` uses a placeholder hostname and `${CERT_NAME}`; override in a custom overlay (e.g. `overlays/my-env`) using `patches` or a replacement manifest.
 
 ### Example: Overlay with a different RHOAI channel
