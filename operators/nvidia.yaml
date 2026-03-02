@@ -26,7 +26,7 @@ metadata:
   name: gpu-operator-certified
   namespace: nvidia-gpu-operator
 spec:
-  channel: stable
+  value: v25.3 # or stable
   installPlanApproval: Automatic
   name: gpu-operator-certified
   source: certified-operators
