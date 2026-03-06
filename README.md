@@ -34,3 +34,173 @@ If you prefer to apply raw manifests by hand:
 5. **DataScienceCluster:** apply `instances/datasciencecluster.yaml`.
 6. **MaaS:** apply `instances/maas-ns.yaml`, then `instances/maas.yaml`.
 Note: update maas.yaml hostnames
+
+
+-----
+
+Install maas - Mar 6
+
+Install operators Cert manager and lead worker set
+
+Apply lws-operator-cr
+
+Install rhcl
+Make sure csv for rhcl has: - name: ISTIO_GATEWAY_CONTROLLER_NAMES
+    value: 'istio.io/gateway-controller,openshift.io/gateway-controller/v1'
+
+Check tls cert for Gateway/maas-default-gateway.yaml in openshift-ingress and apply
+
+Apply Kuadrant custom resource in rh-connectivity-link
+
+
+Install rhoai.... Make sure odhdashboard config is updated and dsc is updated. Llamastack needs to be enabled too
+
+Deploy Postgres with secrets
+
+Configuring TLS backend for Authorino and MaaS API..
+
+
+simulated LLMInferenceServices:
+
+```
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  annotations:
+    alpha.maas.opendatahub.io/tiers: '[]'
+  name: simulated
+  namespace: models
+  finalizers:
+    - serving.kserve.io/llmisvc-finalizer
+spec:
+  model:
+    name: facebook/opt-125m
+    uri: 'hf://sshleifer/tiny-gpt2'
+  replicas: 1
+  router:
+    gateway:
+      refs:
+        - name: maas-default-gateway
+          namespace: openshift-ingress
+    route: {}
+  template:
+    containers:
+      - resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: https
+            scheme: HTTPS
+        name: main
+        command:
+          - /app/llm-d-inference-sim
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: https
+            scheme: HTTPS
+        env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+        ports:
+          - containerPort: 8000
+            name: https
+            protocol: TCP
+        imagePullPolicy: Always
+        image: 'ghcr.io/llm-d/llm-d-inference-sim:v0.7.1'
+        args:
+          - '--port'
+          - '8000'
+          - '--model'
+          - facebook/opt-125m
+          - '--mode'
+          - random
+          - '--ssl-certfile'
+          - /var/run/kserve/tls/tls.crt
+          - '--ssl-keyfile'
+          - /var/run/kserve/tls/tls.key
+```
+
+premium tier:
+
+```
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  annotations:
+    alpha.maas.opendatahub.io/tiers: '["premium"]'
+  name: simulated-premium
+  namespace: models
+  finalizers:
+    - serving.kserve.io/llmisvc-finalizer
+spec:
+  model:
+    name: facebook/opt-125m
+    uri: 'hf://facebook/opt-125m'
+  replicas: 1
+  router:
+    gateway:
+      refs:
+        - name: maas-default-gateway
+          namespace: openshift-ingress
+    route: {}
+  template:
+    containers:
+      - resources: {}
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: https
+            scheme: HTTPS
+        name: main
+        command:
+          - /app/llm-d-inference-sim
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: https
+            scheme: HTTPS
+        env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+        ports:
+          - containerPort: 8000
+            name: https
+            protocol: TCP
+        imagePullPolicy: Always
+        image: 'ghcr.io/llm-d/llm-d-inference-sim:v0.7.1'
+        args:
+          - '--port'
+          - '8000'
+          - '--model'
+          - facebook/opt-125m
+          - '--mode'
+          - random
+          - '--ssl-certfile'
+          - /var/run/kserve/tls/tls.crt
+          - '--ssl-keyfile'
+          - /var/run/kserve/tls/tls.key
+
+```
