@@ -15,4 +15,5 @@ metadata:
     app.opendatahub.io/rhods-dashboard: "true"
 spec:
   dashboardConfig:
+    modelAsService: true
     genAiStudio: true
