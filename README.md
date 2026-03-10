@@ -38,7 +38,7 @@ Note: update maas.yaml hostnames
 
 -----
 
-Install maas - Mar 6
+Install maas
 
 Install operators Cert manager and lead worker set
 
@@ -57,150 +57,27 @@ Install rhoai.... Make sure odhdashboard config is updated and dsc is updated. L
 
 Deploy Postgres with secrets
 
+Deploy auth-policies
+
+Deploy maas-controller …. Auth-policies are same as above
+
 Configuring TLS backend for Authorino and MaaS API..
 
+Restart rollout of deployment Maas-api and authorinio
 
-simulated LLMInferenceServices:
+Delete kuadrant operator controller manager in kuadrant system if llm doesn’t come up because of authoring…..check authpolicy - maas-api-auth-policy (it said to restart kuadrant operator controller manager pod) …. This helps when requesting a token and returning null
 
-```
-apiVersion: serving.kserve.io/v1alpha1
-kind: LLMInferenceService
-metadata:
-  annotations:
-    alpha.maas.opendatahub.io/tiers: '[]'
-  name: simulated
-  namespace: models
-  finalizers:
-    - serving.kserve.io/llmisvc-finalizer
-spec:
-  model:
-    name: facebook/opt-125m
-    uri: 'hf://sshleifer/tiny-gpt2'
-  replicas: 1
-  router:
-    gateway:
-      refs:
-        - name: maas-default-gateway
-          namespace: openshift-ingress
-    route: {}
-  template:
-    containers:
-      - resources:
-          limits:
-            cpu: 500m
-            memory: 512Mi
-          requests:
-            cpu: 100m
-            memory: 256Mi
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: https
-            scheme: HTTPS
-        name: main
-        command:
-          - /app/llm-d-inference-sim
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: https
-            scheme: HTTPS
-        env:
-          - name: POD_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.name
-          - name: POD_NAMESPACE
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.namespace
-        ports:
-          - containerPort: 8000
-            name: https
-            protocol: TCP
-        imagePullPolicy: Always
-        image: 'ghcr.io/llm-d/llm-d-inference-sim:v0.7.1'
-        args:
-          - '--port'
-          - '8000'
-          - '--model'
-          - facebook/opt-125m
-          - '--mode'
-          - random
-          - '--ssl-certfile'
-          - /var/run/kserve/tls/tls.crt
-          - '--ssl-keyfile'
-          - /var/run/kserve/tls/tls.key
-```
 
-premium tier:
+Kuadrant / rh-connectivity-link ns — service authoring-authoriniro-authorization
+annotations:
+    service.beta.openshift.io/serving-cert-secret-name: authorino-server-cert
+Also need to update Authorino authorinio:spec:
+  clusterWide: true
+  healthz: {}
+  listener:
+    ports: {}
+    tls:
+      certSecretRef:
+        name: authorino-server-cert
+      enabled: true
 
-```
-apiVersion: serving.kserve.io/v1alpha1
-kind: LLMInferenceService
-metadata:
-  annotations:
-    alpha.maas.opendatahub.io/tiers: '["premium"]'
-  name: simulated-premium
-  namespace: models
-  finalizers:
-    - serving.kserve.io/llmisvc-finalizer
-spec:
-  model:
-    name: facebook/opt-125m
-    uri: 'hf://facebook/opt-125m'
-  replicas: 1
-  router:
-    gateway:
-      refs:
-        - name: maas-default-gateway
-          namespace: openshift-ingress
-    route: {}
-  template:
-    containers:
-      - resources: {}
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: https
-            scheme: HTTPS
-        name: main
-        command:
-          - /app/llm-d-inference-sim
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: https
-            scheme: HTTPS
-        env:
-          - name: POD_NAME
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.name
-          - name: POD_NAMESPACE
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.namespace
-        ports:
-          - containerPort: 8000
-            name: https
-            protocol: TCP
-        imagePullPolicy: Always
-        image: 'ghcr.io/llm-d/llm-d-inference-sim:v0.7.1'
-        args:
-          - '--port'
-          - '8000'
-          - '--model'
-          - facebook/opt-125m
-          - '--mode'
-          - random
-          - '--ssl-certfile'
-          - /var/run/kserve/tls/tls.crt
-          - '--ssl-keyfile'
-          - /var/run/kserve/tls/tls.key
-
-```
