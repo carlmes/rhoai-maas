@@ -3,5 +3,4 @@ kind: Kustomization
 
 resources:
   - datasciencecluster.yaml
-  - odh-dashboard-config-genaistudio.yaml
   - maas-authorino-networkpolicy.yaml
