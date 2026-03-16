@@ -10,6 +10,18 @@ stringData:
   POSTGRES_PASSWORD: "admin123"
   POSTGRES_DB: "maas"
 ---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgresql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+  volumeMode: Filesystem
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -49,7 +61,7 @@ spec:
         ports:
         - containerPort: 5432
         volumeMounts:
-        - name: data
+        - name: postgresql-data
           mountPath: /var/lib/pgsql/data
         resources:
           requests:
@@ -64,8 +76,9 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 5
       volumes:
-      - name: data
-        emptyDir: {}
+      - name: postgresql-data
+        persistentVolumeClaim:
+          claimName: postgresql
 ---
 apiVersion: v1
 kind: Service
@@ -89,4 +102,5 @@ metadata:
     app: maas-api
     purpose: poc
 stringData:
-  DB_CONNECTION_URL: "postgresql://admin:admin123@postgres:5432/maas?sslmode=disable"
+  DB_CONNECTION_URL: "postgresql://admin:admin123@postgres:5432/maas?sslmode=require"
+  #postgresql://username:password@maas-postgres-rw:5432/app?sslmode=require
