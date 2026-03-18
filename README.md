@@ -4,37 +4,7 @@ Manifests for bringing up **Red Hat OpenShift AI (RHOAI) 3** and **Models-as-a-S
 
 ## Recommended: Install with Kustomize
 
-Use Kustomize for a repeatable, phased install of the RHOAI 3 operator and its dependencies (NFD, NVIDIA GPU, Kuadrant, Gateway, DataScienceCluster, MaaS). See **[docs/KUSTOMIZE.md](docs/KUSTOMIZE.md)** for:
-
-- Repository layout (`base/` and `overlays/`)
-- Phased install order and commands
-- Full overlay option
-- Customization (channels, DSC, MaaS hostname)
-
-Quick start (phased):
-
-```bash
-kustomize build overlays/01-operators | oc apply -f -
-# Wait for operators to be ready, then:
-kustomize build overlays/02-nfd-nvidia-instances | oc apply -f -
-kustomize build overlays/03-kuadrant | oc apply -f -
-kustomize build overlays/04-gateway | oc apply -f -
-kustomize build overlays/05-dsc | oc apply -f -
-kustomize build overlays/06-maas | oc apply -f -
-```
-
-## Manual install (legacy)
-
-If you prefer to apply raw manifests by hand:
-
-1. **Operators** (in order): NFD, NVIDIA GPU, Connectivity Link, Service Mesh 3, then RHOAI 3 — from OperatorHub or apply `operators/nfd.yaml`, `operators/nvidia.yaml`, `operators/rhoai.yaml`.
-2. **NFD and GPU policy:** apply `instances/nfd-instance.yaml`, then `instances/nvidia-cp.yaml`.
-3. **Kuadrant:** apply `instances/kuadrant.yaml`.
-4. **Gateway:** apply `instances/gatewayclass.yaml` and `instances/gateway.yaml`.
-5. **DataScienceCluster:** apply `instances/datasciencecluster.yaml`.
-6. **MaaS:** apply `instances/maas-ns.yaml`, then `instances/maas.yaml`.
-Note: update maas.yaml hostnames
-
+Use Kustomize for a repeatable, phased install of the RHOAI 3 operator and its dependencies (NFD, NVIDIA GPU, RHCL, Gateway, DataScienceCluster, MaaS). See **[docs/KUSTOMIZE.md](docs/KUSTOMIZE.md)** 
 
 -----
 
@@ -59,8 +29,6 @@ Deploy Postgres with secrets
 
 Deploy auth-policies
 
-Deploy maas-controller …. Auth-policies are same as above
-
 Configuring TLS backend for Authorino and MaaS API..
 
 Restart rollout of deployment Maas-api and authorinio
@@ -69,9 +37,13 @@ Delete kuadrant operator controller manager in kuadrant system if llm doesn’t 
 
 
 Kuadrant / rh-connectivity-link ns — service authoring-authoriniro-authorization
+```
 annotations:
     service.beta.openshift.io/serving-cert-secret-name: authorino-server-cert
+```
+
 Also need to update Authorino authorinio:spec:
+```
   clusterWide: true
   healthz: {}
   listener:
@@ -80,4 +52,67 @@ Also need to update Authorino authorinio:spec:
       certSecretRef:
         name: authorino-server-cert
       enabled: true
+```
 
+
+## Validation
+[https://opendatahub-io.github.io/models-as-a-service/latest/install/validation/](https://opendatahub-io.github.io/models-as-a-service/latest/install/validation/)
+
+### 1. Get Gateway Endpoint
+
+```bash
+CLUSTER_DOMAIN=$(kubectl get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}') && \
+HOST="https://maas.${CLUSTER_DOMAIN}" && \
+echo "Gateway endpoint: $HOST"
+```
+
+
+### 2. Get Authentication Token
+
+For OpenShift:
+
+```bash
+TOKEN_RESPONSE=$(curl -sSk \
+  -H "Authorization: Bearer $(oc whoami -t)" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  -d '{"expiration": "10m"}' \
+  "${HOST}/maas-api/v1/tokens") && \
+TOKEN=$(echo $TOKEN_RESPONSE | jq -r .token) && \
+echo "Token obtained: ${TOKEN:0:20}..."
+```
+
+
+### 3. List Available Models
+
+```bash
+MODELS=$(curl -sSk ${HOST}/maas-api/v1/models \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $TOKEN" | jq -r .) && \
+echo $MODELS | jq . && \
+MODEL_NAME=$(echo $MODELS | jq -r '.data[0].id') && \
+MODEL_URL=$(echo $MODELS | jq -r '.data[0].url') && \
+echo "Model URL: $MODEL_URL"
+```
+
+### 4. Test Model Inference Endpoint
+
+Send a request to the model endpoint (should get a 200 OK response):
+
+```bash
+curl -sSk -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"model\": \"${MODEL_NAME}\", \"prompt\": \"Hello\", \"max_tokens\": 50}" \
+  "${MODEL_URL}/v1/completions" | jq
+```
+
+### 5. Test Token rate limiting
+
+```bash
+for i in {1..16}; do                           
+  curl -sSk -o /dev/null -w "%{http_code}\n" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "{\"model\": \"${MODEL_NAME}\", \"prompt\": \"Hello\", \"max_tokens\": 50}" \
+    "${MODEL_URL}/v1/completions"
+```
