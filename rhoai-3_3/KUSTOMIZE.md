@@ -14,7 +14,7 @@ Apply overlays **in order** and wait for each phase to be ready before the next.
 | 4 | `overlays/04-rhoai` | Creates DataScienceCluster and Authorinio NetworkPolicy |
 | 5 | `overlays/05-odhdashboard` | Updates teh ODH Dashboard Config to enable MaaS and GenAI studio (only for v3.3?) Has to be installed after DSC |
 | 6 | `overlays/06-postgres` | Creates Postgres instance for token storage WIP |
-| 7 | `overlays/07-maas-controller` | ~~Creates Maas-controller deployment,~~ Policies, ~~RBAC and CRDS~~ (needed for v3.4) |
+| 7 | `overlays/07-maas-controller` | ~~Creates Maas-controller deployment,~~ Policies, RBAC ~~and CRDS~~ (needed for v3.4) |
 | 8 | `overlays/08-simulated-models` | Creates dummy models for testing |
 
 ### Commands (phased)
