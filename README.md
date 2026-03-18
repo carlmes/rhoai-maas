@@ -8,41 +8,44 @@ Use Kustomize for a repeatable, phased install of the RHOAI 3 operator and its d
 
 -----
 
-Install maas
+## Notes
+Install maas using kustomize. See **[docs/KUSTOMIZE.md](docs/KUSTOMIZE.md)** 
 
-Install operators Cert manager and lead worker set
+Install notes:
+1. Install operators Cert manager and lead worker set
 
-Apply lws-operator-cr
+2. Apply lws-operator-cr
 
-Install rhcl
+3. Install rhcl
 Make sure csv for rhcl has: - name: ISTIO_GATEWAY_CONTROLLER_NAMES
     value: 'istio.io/gateway-controller,openshift.io/gateway-controller/v1'
 
-Check tls cert for Gateway/maas-default-gateway.yaml in openshift-ingress and apply
+4. Check tls cert for Gateway/maas-default-gateway.yaml in openshift-ingress and apply
 
-Apply Kuadrant custom resource in rh-connectivity-link
+5. Apply Kuadrant custom resource in rh-connectivity-link
 
 
-Install rhoai.... Make sure odhdashboard config is updated and dsc is updated. Llamastack needs to be enabled too
+6. Install rhoai.... Make sure odhdashboard config is updated and dsc is updated. Llamastack needs to be enabled too
 
-Deploy Postgres with secrets
+7. Deploy Postgres with secrets
 
-Deploy auth-policies
+8. Deploy auth-policies
 
-Configuring TLS backend for Authorino and MaaS API..
+9. Configuring TLS backend for Authorino and MaaS API..
 
-Restart rollout of deployment Maas-api and authorinio
+10. Restart rollout of deployment Maas-api and authorinio
 
-Delete kuadrant operator controller manager in kuadrant system if llm doesn’t come up because of authoring…..check authpolicy - maas-api-auth-policy (it said to restart kuadrant operator controller manager pod) …. This helps when requesting a token and returning null
-
+11. Delete kuadrant operator controller manager in kuadrant system if llm doesn’t come up because of authoring…..check authpolicy - maas-api-auth-policy (it said to restart kuadrant operator controller manager pod) …. This helps when requesting a token and returning null
 
 Kuadrant / rh-connectivity-link ns — service authoring-authoriniro-authorization
+
 ```
 annotations:
     service.beta.openshift.io/serving-cert-secret-name: authorino-server-cert
 ```
 
-Also need to update Authorino authorinio:spec:
+11. Also need to update Authorino authorinio:spec:
+
 ```
   clusterWide: true
   healthz: {}
