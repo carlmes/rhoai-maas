@@ -4,12 +4,12 @@ Manifests for bringing up **Red Hat OpenShift AI (RHOAI) 3** and **Models-as-a-S
 
 ## Recommended: Install with Kustomize
 
-Use Kustomize for a repeatable, phased install of the RHOAI 3 operator and its dependencies (NFD, NVIDIA GPU, RHCL, Gateway, DataScienceCluster, MaaS). See **[docs/KUSTOMIZE.md](docs/KUSTOMIZE.md)** 
+Use Kustomize for a repeatable, phased install of the RHOAI 3 operator and its dependencies (NFD, NVIDIA GPU, RHCL, Gateway, DataScienceCluster, MaaS). See **[rhoai-3_3/KUSTOMIZE.md](rhoai-3_3/KUSTOMIZE.md)** 
 
 -----
 
 ## Notes
-Install maas using kustomize. See **[docs/KUSTOMIZE.md](docs/KUSTOMIZE.md)** 
+Install maas using kustomize. See **[rhoai-3_3/KUSTOMIZE.md](rhoai-3_3/KUSTOMIZE.md)** 
 
 Install notes:
 1. Install operators Cert manager and lead worker set
