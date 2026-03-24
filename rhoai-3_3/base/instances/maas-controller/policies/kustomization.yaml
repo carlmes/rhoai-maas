@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - gateway-default-auth.yaml
   - gateway-default-deny.yaml
+  - tokenrate.yaml
