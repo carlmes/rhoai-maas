@@ -17,6 +17,38 @@ Apply overlays **in order** and wait for each phase to be ready before the next.
 | 7 | `overlays/07-maas-controller` | ~~Creates Maas-controller deployment,~~ Policies, RBAC ~~and CRDS~~ (needed for v3.4) |
 | 8 | `overlays/08-simulated-models` | Creates dummy models for testing |
 
+Notes:
+1. After installation of RHCL (STEP 1):
+Make sure csv for rhcl has: - name: ISTIO_GATEWAY_CONTROLLER_NAMES
+    value: 'istio.io/gateway-controller,openshift.io/gateway-controller/v1'
+
+2. (After Step 2) Before applying Gateway (STEP 3) UPDATE HOST NAME in gateway yaml.
+
+3. Add annotation to __Kuadrant / rh-connectivity-link ns — service authorinio-authorinio-authorization__
+
+```
+annotations:
+    service.beta.openshift.io/serving-cert-secret-name: authorino-server-cert
+```
+Delete `kuadrant-operator-controller` in rhcl namespace, it should come back up with cert.
+
+4. Update Authorino Authorino:
+
+```
+  clusterWide: true
+  healthz: {}
+  listener:
+    ports: {}
+    tls:
+      certSecretRef:
+        name: authorino-server-cert
+      enabled: true
+```
+
+5. After (STEP 6) Postgres DB is installed, view `postgres/maas-api.yaml` and update `maas-api` deployment with postgres details. Update and restart `maas-api` deployment.
+
+
+
 ### Commands (phased)
 
 ```bash
