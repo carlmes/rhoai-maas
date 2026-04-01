@@ -7,6 +7,7 @@ kind: Kustomization
 resources:
   - ../../base/operators/nfd
   - ../../base/operators/nvidia
+  - ../../base/operators/cert-manager
   - ../../base/operators/connectivity-link
   - ../../base/operators/leaderworkerset
   - ../../base/operators/rhoai
