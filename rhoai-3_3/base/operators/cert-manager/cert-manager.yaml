@@ -13,8 +13,8 @@ metadata:
   name: cert-manager-operator
   namespace: cert-manager-operator
 spec:
-  targetNamespaces:
-    - cert-manager-operator
+  targetNamespaces: []
+  spec: {}
   upgradeStrategy: Default
 ---
 apiVersion: operators.coreos.com/v1alpha1
