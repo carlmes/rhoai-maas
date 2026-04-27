@@ -32,7 +32,7 @@ annotations:
 ```
 Delete `kuadrant-operator-controller` in rhcl namespace, it should come back up with cert.
 
-4. Update Authorino Authorino:
+4. In the `rh-connectivity-link` namespace, update the Authorino operator YAML, ignore the warning about Kuadrant managed resources:
 
 ```
   clusterWide: true
