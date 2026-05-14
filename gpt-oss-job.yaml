@@ -1,0 +1,83 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gpt-oss-job
+  namespace: default
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: gpt-oss-container
+          image: registry.redhat.io/ubi9/python-311:latest
+          command:
+            - /bin/bash
+            - -c
+            - |
+              python << 'EOF'
+              import boto3
+              import os
+              client = boto3.client('s3', aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"], aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"], endpoint_url=os.environ["AWS_S3_ENDPOINT"])
+              response = client.list_objects_v2(Bucket=os.environ["AWS_S3_BUCKET"])
+
+              print('Listing objects in bucket:')
+              for obj in response.get('Contents', []):
+                print(obj['Key'])
+              
+              print('Downloading object in path:' + os.environ["model_path"])
+              s3_resource = boto3.resource('s3', aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"], aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"], endpoint_url=os.environ["AWS_S3_ENDPOINT"])
+              bucket = s3_resource.Bucket(os.environ["AWS_S3_BUCKET"])
+              destination_path = os.environ["destination_path"]
+              for obj in bucket.objects.filter(Prefix=os.environ["model_path"]):
+                dest_file = os.path.join(destination_path, obj.key)
+                if not os.path.exists(os.path.dirname(dest_file)):
+                  os.makedirs(os.path.dirname(dest_file))
+                print('Downloading object: ' + obj.key + ' to ' + dest_file)
+                bucket.download_file(obj.key, dest_file)
+              print('Download complete')
+              print('Listing objects in directory:')
+              for root, dirs, files in os.walk(destination_path):
+                for file in files:
+                  print(os.path.join(root, file))
+                for dir in dirs:
+                  print(os.path.join(root, dir))
+              
+              print('Downloading tiktokens')
+              print('Downloading object: o200k_base.tiktoken')
+              bucket.download_file("o200k_base.tiktoken", os.path.join(destination_path, "o200k_base.tiktoken"))
+              print('Downloading object: cl100k_base.tiktoken')
+              bucket.download_file("cl100k_base.tiktoken", os.path.join(destination_path, "cl100k_base.tiktoken"))
+              print('Download complete')
+
+
+              print('Listing all files and directories from the root:')
+              for dirpath, dirnames, filenames in os.walk('/'):
+                for dirname in dirnames:
+                  print(os.path.join(dirpath, dirname))
+                for filename in filenames:
+                  print(os.path.join(dirpath, filename))
+           
+              EOF
+          env:
+            - name: model_path
+              value: "/models/openai_gpt-oss-20b/1"
+            - name: destination_path
+              value: "/data/models"
+          envFrom:
+            - secretRef:
+                name: gpt-oss-connection
+          volumeMounts:
+            - name: gpt-oss-storage
+              mountPath: /data
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: gpt-oss-storage
+          persistentVolumeClaim:
+            claimName: gpt-oss-pvc

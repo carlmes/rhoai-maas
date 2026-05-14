@@ -3,3 +3,5 @@ kind: Kuadrant
 metadata:
   name: kuadrant
   namespace: rh-connectivity-link
+spec:
+  observability: {}

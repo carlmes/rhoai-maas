@@ -3,8 +3,6 @@ kind: LLMInferenceService
 metadata:
   name: simulated-premium
   namespace: ai-models
-  annotations:
-    alpha.maas.opendatahub.io/tiers: '["premium"]'
 spec:
   model:
     uri: hf://facebook/opt-125m

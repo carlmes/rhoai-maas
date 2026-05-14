@@ -9,11 +9,18 @@ spec:
   components:
     kserve:
       managementState: Managed
+      defaultDeploymentMode: RawDeployment  # Direct pod deployments without Knative
+      nim:
+        managementState: Managed  # Enable NVIDIA NIM (NVIDIA Inference Microservices) support
+      rawDeploymentServiceConfig: Headless  # Use headless services for raw deployments
+      serving:
+        ingressGateway:
+          certificate:
+            type: OpenshiftDefaultIngress  # Use OpenShift's default ingress certificate
+        managementState: Removed  # Disable Knative serving (incompatible with RawDeployment)
+        name: knative-serving
       modelsAsService:
         managementState: Managed
-      nim:
-        managementState: Managed
-      rawDeploymentServiceConfig: Headless
     modelregistry:
       managementState: Managed
       registriesNamespace: rhoai-model-registries

@@ -17,3 +17,4 @@ spec:
   dashboardConfig:
     modelAsService: true
     genAiStudio: true
+    observabilityDashboard: true
