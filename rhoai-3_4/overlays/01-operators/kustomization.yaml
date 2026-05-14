@@ -1,0 +1,13 @@
+# Apply first: installs NFD, NVIDIA GPU, Connectivity Link, Leader Worker Set, and RHOAI operators.
+# Prerequisites: OpenShift cluster with OLM; Service Mesh 3 and cert-manager from
+# OperatorHub if required (Connectivity Link and Leader Worker Set depend on cert-manager).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base/operators/nfd
+  - ../../base/operators/nvidia
+  - ../../base/operators/cert-manager
+  - ../../base/operators/connectivity-link
+  - ../../base/operators/leaderworkerset
+  - ../../base/operators/rhoai
