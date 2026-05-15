@@ -2,4 +2,4 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - odh-dashboard-config.yaml
+  - ../../base/instances/rhoai-observability-dashboard/
