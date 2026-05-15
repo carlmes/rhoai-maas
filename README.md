@@ -76,3 +76,6 @@ annotations:
  Update RHOAI default-dsci in the `spec.monitoring`. Look at `rhoai-3_4/base/instances/rhoai-observability-dashboard/default-dsci.yaml`.
  OdhDashboardConfig `spec.dashboardConfig`: `observabilityDashboard: true`. (Already updated already in `rhoai-3_4/base/instances/odhdashboard/odh-dashboard-config.yaml`)
 
+## Validation
+
+Please use for validation: https://opendatahub-io.github.io/models-as-a-service/v0.1.1/install/validation/
