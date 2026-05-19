@@ -31,6 +31,7 @@ wait_for_install_plan_completion "cert-manager-operator" "openshift-cert-manager
 wait_for_install_plan_completion "rh-connectivity-link" "rhcl-operator"
 wait_for_install_plan_completion "openshift-lws-operator" "leader-worker-set"
 wait_for_install_plan_completion "redhat-ods-operator" "rhods-operator"
+wait_for_install_plan_completion "openshift-operators" "servicemeshoperator3"
 
 echo "Patching ClusterServiceVersion for Red Hat Connectivity Link:"
 echo "   - name: ISTIO_GATEWAY_CONTROLLER_NAMES"
@@ -93,10 +94,6 @@ echo ""
 
 echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/05-odhdashboard"
 apply_firmly ${KUSTOMIZE_DIR}/overlays/05-odhdashboard
-
-echo "Restarting rhoai-dashboard pods to pick up new ODH Dashboard config"
-oc rollout restart deployment/rhods-dashboard -n redhat-ods-applications
-oc rollout status deployment/rhods-dashboard -n redhat-ods-applications --timeout=120s
 
 
 echo "=========================================================================="
@@ -161,3 +158,9 @@ echo ""
 echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/10-observability-dashboard-rhoai"
 apply_firmly ${KUSTOMIZE_DIR}/overlays/10-observability-dashboard-rhoai
 
+echo "=========================================================================="
+echo " 11. Restarting rhoai-dashboard pods to pick up new ODH Dashboard config"
+echo ""
+
+oc rollout restart deployment/rhods-dashboard -n redhat-ods-applications
+oc rollout status deployment/rhods-dashboard -n redhat-ods-applications --timeout=120s
