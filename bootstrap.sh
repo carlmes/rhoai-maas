@@ -107,19 +107,24 @@ apply_firmly ${KUSTOMIZE_DIR}/overlays/06-postgres
 echo "Waiting for Postgres deployment to be ready..."
 oc rollout status deployment/postgres -n redhat-ods-applications --timeout=120s
 
-# Secret bridge — postgres.yaml creates a secret named maas-db-config, but the maas-api 
-# deployment template (from maas-api.yaml) references database-config. The script reads 
-# the connection URL out of maas-db-config and uses --dry-run=client | oc apply (idempotent) 
-#to create database-config with the same value.
-echo "Creating 'database-config' secret for maas-api from postgres connection URL"
-DB_CONNECTION_URL=$(oc get secret maas-db-config -n redhat-ods-applications \
-  -o jsonpath='{.data.DB_CONNECTION_URL}' | base64 -d)
-oc create secret generic database-config \
+# Create the maas-db-config secret by copying the config from the postgres-creds secret
+#
+# RHOAI 3.4 MaaS Doc: https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.4/html/govern_llm_access_with_models-as-a-service/deploy-and-manage-models-as-a-service_maas#configure-postgresql-secret-for-maas_maas-deploy
+#
+echo "Creating the 'maas-db-config' secret from from postgres-creds secret..."
+POSTGRES_USER=$(oc get secret postgres-creds -n redhat-ods-applications \
+  -o jsonpath='{.data.POSTGRES_USER}' | base64 -d)
+POSTGRES_PASSWORD=$(oc get secret postgres-creds -n redhat-ods-applications \
+  -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 -d)
+POSTGRES_DB=$(oc get secret postgres-creds -n redhat-ods-applications \
+  -o jsonpath='{.data.POSTGRES_DB}' | base64 -d)
+oc create secret generic maas-db-config \
   -n redhat-ods-applications \
-  --from-literal=DB_CONNECTION_URL="${DB_CONNECTION_URL}" \
+  --from-literal=DB_CONNECTION_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable" \
   --dry-run=client -o yaml | oc apply -f -
+oc label secret maas-db-config -n redhat-ods-applications "app=maas-api" "purpose=poc" "test=123" --overwrite
 
-# rollout restart — this restarts the deployment to pick up the new argument without downtime
+# Rollout restart — restarts the maas-api deployment to pick up the new arguments
 oc rollout restart deployment/maas-api -n redhat-ods-applications
 oc rollout status deployment/maas-api -n redhat-ods-applications --timeout=120s
 

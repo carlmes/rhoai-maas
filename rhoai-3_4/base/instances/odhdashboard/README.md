@@ -1,0 +1,1 @@
+RHOAI 3.4 documentation: [12.2. Enable the observability dashboard in the UI](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.4/html/managing_openshift_ai/managing-observability_managing-rhoai#enabling-observability-dashboard-ui_managing-rhoai)
