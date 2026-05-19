@@ -43,45 +43,45 @@ spec:
         app: postgres
     spec:
       containers:
-      - name: postgres
-        image: registry.redhat.io/rhel9/postgresql-16:latest
-        env:
-        - name: POSTGRESQL_USER
-          valueFrom:
-            secretKeyRef:
-              name: postgres-creds
-              key: POSTGRES_USER
-        - name: POSTGRESQL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: postgres-creds
-              key: POSTGRES_PASSWORD
-        - name: POSTGRESQL_DATABASE
-          valueFrom:
-            secretKeyRef:
-              name: postgres-creds
-              key: POSTGRES_DB
-        ports:
-        - containerPort: 5432
-        volumeMounts:
-        - name: postgresql-data
-          mountPath: /var/lib/pgsql/data
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "100m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-        readinessProbe:
-          exec:
-            command: ["/usr/libexec/check-container"]
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: postgres
+          image: registry.redhat.io/rhel9/postgresql-16:latest
+          env:
+            - name: POSTGRESQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-creds
+                  key: POSTGRES_USER
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-creds
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRESQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-creds
+                  key: POSTGRES_DB
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgresql-data
+              mountPath: /var/lib/pgsql/data
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            exec:
+              command: ["/usr/libexec/check-container"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
       volumes:
-      - name: postgresql-data
-        persistentVolumeClaim:
-          claimName: postgresql
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: postgresql
 ---
 apiVersion: v1
 kind: Service
@@ -95,5 +95,5 @@ spec:
   selector:
     app: postgres
   ports:
-  - port: 5432
-    targetPort: 5432
+    - port: 5432
+      targetPort: 5432
