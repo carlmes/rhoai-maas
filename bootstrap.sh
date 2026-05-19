@@ -74,8 +74,8 @@ echo ""
 echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/04-rhoai"
 apply_firmly ${KUSTOMIZE_DIR}/overlays/04-rhoai
 
-echo "Annotating authorino-authorinio-authorization service with serving cert secret name"
-oc patch service authorino-authorinio-authorization -n rh-connectivity-link --type=merge -p \
+echo "Annotating the authorino-authorino-authorization service with serving cert secret name"
+oc patch service authorino-authorino-authorization -n rh-connectivity-link --type=merge -p \
   '{"metadata":{"annotations":{"service.beta.openshift.io/serving-cert-secret-name":"authorino-server-cert"}}}'
 
 echo "Restarting kuadrant-operator-controller-manager so it picks up the new cert"
@@ -118,14 +118,6 @@ oc create secret generic database-config \
   --from-literal=DB_CONNECTION_URL="${DB_CONNECTION_URL}" \
   --dry-run=client -o yaml | oc apply -f -
 
-# --storage=external patch — the maas-api.yaml reference file shows the deployment must 
-# pass --storage=external so the API uses Postgres instead of in-memory storage. The || true 
-# makes it a no-op if the arg is already set by RHOAI.
-echo "Ensuring maas-api uses external storage and rolling out restart"
-oc patch deployment maas-api -n redhat-ods-applications --type=json -p \
-  '[{"op":"add","path":"/spec/template/spec/containers/0/args","value":["--storage=external"]}]' \
-  2>/dev/null || true
-
 # rollout restart — this restarts the deployment to pick up the new argument without downtime
 oc rollout restart deployment/maas-api -n redhat-ods-applications
 oc rollout status deployment/maas-api -n redhat-ods-applications --timeout=120s
@@ -158,10 +150,10 @@ apply_firmly ${KUSTOMIZE_DIR}/overlays/09-maas-subscriptions
 
 
 echo "=========================================================================="
-echo " 10. overlays/10-observability"
+echo " 10. overlays/10-observability-dashboard-rhoai"
 echo " Creates Observability stack for testing"
 echo ""
 
-echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/10-observability"
-apply_firmly ${KUSTOMIZE_DIR}/overlays/10-observability
+echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/10-observability-dashboard-rhoai"
+apply_firmly ${KUSTOMIZE_DIR}/overlays/10-observability-dashboard-rhoai
 
