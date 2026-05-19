@@ -68,65 +68,14 @@ annotations:
 
 12. TokenRatePolicy is automatically created per model. Search for this in the model namespace and update it.
 
+13. RHOAI Observability Dashboard needs these operators:
+ - Cluster Observability Operator: Deploys and manages Prometheus and Alertmanager for metrics and alerts.
+ - Tempo Operator: Provides the Tempo backend for distributed tracing.
+ - Red Hat build of OpenTelemetry: Deploys the OpenTelemetry Collector for collecting and exporting telemetry data.
+
+ Update RHOAI default-dsci in the `spec.monitoring`. Look at `rhoai-3_4/base/instances/rhoai-observability-dashboard/default-dsci.yaml`.
+ OdhDashboardConfig `spec.dashboardConfig`: `observabilityDashboard: true`. (Already updated already in `rhoai-3_4/base/instances/odhdashboard/odh-dashboard-config.yaml`)
+
 ## Validation
-[https://opendatahub-io.github.io/models-as-a-service/latest/install/validation/](https://opendatahub-io.github.io/models-as-a-service/latest/install/validation/)
 
-### 1. Get Gateway Endpoint
-
-```bash
-CLUSTER_DOMAIN=$(kubectl get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}') && \
-HOST="https://maas.${CLUSTER_DOMAIN}" && \
-echo "Gateway endpoint: $HOST"
-```
-
-
-### 2. Get Authentication Token
-
-For OpenShift:
-
-```bash
-TOKEN_RESPONSE=$(curl -sSk \
-  -H "Authorization: Bearer $(oc whoami -t)" \
-  -H "Content-Type: application/json" \
-  -X POST \
-  -d '{"expiration": "10m"}' \
-  "${HOST}/maas-api/v1/tokens") && \
-TOKEN=$(echo $TOKEN_RESPONSE | jq -r .token) && \
-echo "Token obtained: ${TOKEN:0:20}..."
-```
-
-
-### 3. List Available Models
-
-```bash
-MODELS=$(curl -sSk ${HOST}/maas-api/v1/models \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $TOKEN" | jq -r .) && \
-echo $MODELS | jq . && \
-MODEL_NAME=$(echo $MODELS | jq -r '.data[0].id') && \
-MODEL_URL=$(echo $MODELS | jq -r '.data[0].url') && \
-echo "Model URL: $MODEL_URL"
-```
-
-### 4. Test Model Inference Endpoint
-
-Send a request to the model endpoint (should get a 200 OK response):
-
-```bash
-curl -sSk -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d "{\"model\": \"${MODEL_NAME}\", \"prompt\": \"Hello\", \"max_tokens\": 50}" \
-  "${MODEL_URL}/v1/completions" | jq
-```
-
-### 5. Test Token rate limiting
-
-```bash
-for i in {1..16}; do                           
-  curl -sSk -o /dev/null -w "%{http_code}\n" \
-    -H "Authorization: Bearer $TOKEN" \
-    -H "Content-Type: application/json" \
-    -d "{\"model\": \"${MODEL_NAME}\", \"prompt\": \"Hello\", \"max_tokens\": 50}" \
-    "${MODEL_URL}/v1/completions"
-done
-```
+Please use for validation: https://opendatahub-io.github.io/models-as-a-service/v0.1.1/install/validation/
