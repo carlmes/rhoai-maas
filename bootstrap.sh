@@ -32,10 +32,38 @@ wait_for_install_plan_completion "rh-connectivity-link" "rhcl-operator"
 wait_for_install_plan_completion "openshift-lws-operator" "leader-worker-set"
 wait_for_install_plan_completion "redhat-ods-operator" "rhods-operator"
 
+echo "Patching ClusterServiceVersion for Red Hat Connectivity Link:"
+echo "   - name: ISTIO_GATEWAY_CONTROLLER_NAMES"
+echo "     value: 'istio.io/gateway-controller,openshift.io/gateway-controller/v1'"
+echo ""
+ENV_INDEX=$(oc get ClusterServiceVersion rhcl-operator.v1.3.3 -n rh-connectivity-link -o json | \
+  jq '.spec.install.spec.deployments[0].spec.template.spec.containers[0].env | map(.name) | index("ISTIO_GATEWAY_CONTROLLER_NAMES")')
+oc patch ClusterServiceVersion rhcl-operator.v1.3.3 -n rh-connectivity-link --type=json -p \
+  "[{\"op\":\"replace\",\"path\":\"/spec/install/spec/deployments/0/spec/template/spec/containers/0/env/${ENV_INDEX}/value\",\"value\":\"istio.io/gateway-controller,openshift.io/gateway-controller/v1\"}]"
 
+echo "=========================================================================="
+echo " 2. overlays/02-nfd-nvidia-lws-instances"
+echo " Create NFD instance and NVIDIA ClusterPolicy (GPU nodes) and Lead Worker Set Instance"
+echo ""
 
+echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/02-nfd-nvidia-lws-instances"
+apply_firmly ${KUSTOMIZE_DIR}/overlays/02-nfd-nvidia-lws-instances
 
-#| 2 | `overlays/02-nfd-nvidia-lws-instances` | Creates NFD instance and NVIDIA ClusterPolicy (GPU nodes) and Lead Worker Set Instance |
+echo "=========================================================================="
+echo " 3. overlays/03-gateway"
+echo " Creates Gatewayclass and Maas Gateway !! UPDATE HOST NAME !!"
+echo ""
+
+echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/03-gateway"
+apply_firmly ${KUSTOMIZE_DIR}/overlays/03-gateway
+
+echo "UPDATE HOST NAME in gateway yaml."
+GATEWAY_HOSTNAME=$(oc get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}' | sed 's/^apps\./maas.apps./')
+echo "Patching Gateway hostname to: ${GATEWAY_HOSTNAME}"
+oc patch gateway maas-default-gateway -n openshift-ingress --type=json -p \
+  "[{\"op\":\"replace\",\"path\":\"/spec/listeners/0/hostname\",\"value\":\"${GATEWAY_HOSTNAME}\"},
+    {\"op\":\"replace\",\"path\":\"/spec/listeners/1/hostname\",\"value\":\"${GATEWAY_HOSTNAME}\"}]"
+
 #| 3 | `overlays/03-gateway` | Creates Gatewayclass and Maas Gateway !! UPDATE HOST NAME !! |
 #| 4 | `overlays/04-rhoai` | Creates DataScienceCluster and Authorinio NetworkPolicy |
 #| 5 | `overlays/05-odhdashboard` | Updates teh ODH Dashboard Config to enable MaaS and GenAI studio (only for v3.3?) Has to be installed after DSC |
