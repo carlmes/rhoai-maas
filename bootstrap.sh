@@ -94,6 +94,10 @@ echo ""
 echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/05-odhdashboard"
 apply_firmly ${KUSTOMIZE_DIR}/overlays/05-odhdashboard
 
+echo "Restarting rhoai-dashboard pods to pick up new ODH Dashboard config"
+oc rollout restart deployment/rhods-dashboard -n redhat-ods-applications
+oc rollout status deployment/rhods-dashboard -n redhat-ods-applications --timeout=120s
+
 
 echo "=========================================================================="
 echo " 6. overlays/06-postgres"
