@@ -5,8 +5,8 @@ metadata:
 spec:
   applicationsNamespace: redhat-ods-applications
   monitoring:
-    managementState: Managed                 # Required: Enables and manages the observability stack
-    namespace: redhat-ods-monitoring    # Required: Namespace where monitoring components are deployed
+    managementState: Managed                  # Required: Enables and manages the observability stack
+    namespace: redhat-ods-monitoring          # Required: Namespace where monitoring components are deployed
     alerting: {}                              # Alertmanager configuration, uses default settings if empty
     metrics:                                  # Prometheus configuration for metrics collection
       replicas: 1                             # Optional: Number of Prometheus instances
