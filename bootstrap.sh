@@ -122,7 +122,7 @@ oc create secret generic maas-db-config \
   -n redhat-ods-applications \
   --from-literal=DB_CONNECTION_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable" \
   --dry-run=client -o yaml | oc apply -f -
-oc label secret maas-db-config -n redhat-ods-applications "app=maas-api" "purpose=poc" "test=123" --overwrite
+oc label secret maas-db-config -n redhat-ods-applications "app=maas-api" "purpose=poc" --overwrite
 
 # Rollout restart — restarts the maas-api deployment to pick up the new arguments
 oc rollout restart deployment/maas-api -n redhat-ods-applications
