@@ -49,6 +49,7 @@ echo ""
 echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/02-nfd-nvidia-lws-instances"
 apply_firmly ${KUSTOMIZE_DIR}/overlays/02-nfd-nvidia-lws-instances
 
+
 echo "=========================================================================="
 echo " 3. overlays/03-gateway"
 echo " Creates Gatewayclass and Maas Gateway !! UPDATE HOST NAME !!"
@@ -64,33 +65,103 @@ oc patch gateway maas-default-gateway -n openshift-ingress --type=json -p \
   "[{\"op\":\"replace\",\"path\":\"/spec/listeners/0/hostname\",\"value\":\"${GATEWAY_HOSTNAME}\"},
     {\"op\":\"replace\",\"path\":\"/spec/listeners/1/hostname\",\"value\":\"${GATEWAY_HOSTNAME}\"}]"
 
-#| 4 | `overlays/04-rhoai` | Creates DataScienceCluster and Authorinio NetworkPolicy |
-#| 5 | `overlays/05-odhdashboard` | Updates teh ODH Dashboard Config to enable MaaS and GenAI studio (only for v3.3?) Has to be installed after DSC |
-#| 6 | `overlays/06-postgres` | Creates Postgres instance for token storage WIP |
-#| 7 | `overlays/07-maas-controller` | ~~Creates Maas-controller deployment,~~ Policies, RBAC ~~and CRDS~~ (needed for v3.4) |
-#| 8 | `overlays/08-simulated-models` | Creates dummy models for testing |
+
+echo "=========================================================================="
+echo " 4. overlays/04-rhoai"
+echo " Creates DataScienceCluster and Authorinio NetworkPolicy"
+echo ""
+
+echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/04-rhoai"
+apply_firmly ${KUSTOMIZE_DIR}/overlays/04-rhoai
+
+echo "Annotating authorino-authorinio-authorization service with serving cert secret name"
+oc patch service authorino-authorinio-authorization -n rh-connectivity-link --type=merge -p \
+  '{"metadata":{"annotations":{"service.beta.openshift.io/serving-cert-secret-name":"authorino-server-cert"}}}'
+
+echo "Restarting kuadrant-operator-controller-manager so it picks up the new cert"
+oc delete pod -n rh-connectivity-link -l control-plane=controller-manager --wait=false
+
+echo "Patching Authorino CR to enable TLS with the serving cert"
+oc patch authorino authorino -n rh-connectivity-link --type=merge -p \
+  '{"spec":{"clusterWide":true,"healthz":{},"listener":{"ports":{},"tls":{"certSecretRef":{"name":"authorino-server-cert"},"enabled":true}}}}'
 
 
-# 2. Apply lws-operator-cr
+echo "=========================================================================="
+echo " 5. overlays/05-odhdashboard"
+echo " Updates the ODH Dashboard Config to enable MaaS and GenAI studio (only for v3.3?) Has to be installed after DSC"
+echo ""
 
-# 3. Install rhcl
-# Make sure csv for rhcl has: - name: ISTIO_GATEWAY_CONTROLLER_NAMES
-#     value: 'istio.io/gateway-controller,openshift.io/gateway-controller/v1'
-
-# 4. Check tls cert for Gateway/maas-default-gateway.yaml in openshift-ingress and apply
-
-# 5. Apply Kuadrant custom resource in rh-connectivity-link
+echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/05-odhdashboard"
+apply_firmly ${KUSTOMIZE_DIR}/overlays/05-odhdashboard
 
 
-# 6. Install rhoai.... Make sure odhdashboard config is updated and dsc is updated. Llamastack needs to be enabled too
+echo "=========================================================================="
+echo " 6. overlays/06-postgres"
+echo " Creates Postgres instance for token storage WIP"
+echo ""
 
-# 7. Deploy Postgres with secrets
+echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/06-postgres"
+apply_firmly ${KUSTOMIZE_DIR}/overlays/06-postgres
 
-# 8. Deploy auth-policies
+echo "Waiting for Postgres deployment to be ready..."
+oc rollout status deployment/postgres -n redhat-ods-applications --timeout=120s
 
-# 9. Configuring TLS backend for Authorino and MaaS API..
+# Secret bridge — postgres.yaml creates a secret named maas-db-config, but the maas-api 
+# deployment template (from maas-api.yaml) references database-config. The script reads 
+# the connection URL out of maas-db-config and uses --dry-run=client | oc apply (idempotent) 
+#to create database-config with the same value.
+echo "Creating 'database-config' secret for maas-api from postgres connection URL"
+DB_CONNECTION_URL=$(oc get secret maas-db-config -n redhat-ods-applications \
+  -o jsonpath='{.data.DB_CONNECTION_URL}' | base64 -d)
+oc create secret generic database-config \
+  -n redhat-ods-applications \
+  --from-literal=DB_CONNECTION_URL="${DB_CONNECTION_URL}" \
+  --dry-run=client -o yaml | oc apply -f -
 
-# 10. Restart rollout of deployment Maas-api and authorinio
+# --storage=external patch — the maas-api.yaml reference file shows the deployment must 
+# pass --storage=external so the API uses Postgres instead of in-memory storage. The || true 
+# makes it a no-op if the arg is already set by RHOAI.
+echo "Ensuring maas-api uses external storage and rolling out restart"
+oc patch deployment maas-api -n redhat-ods-applications --type=json -p \
+  '[{"op":"add","path":"/spec/template/spec/containers/0/args","value":["--storage=external"]}]' \
+  2>/dev/null || true
 
-# 11. Delete kuadrant operator controller manager in kuadrant system if llm doesn’t come up because of authoring…..check authpolicy - maas-api-auth-policy (it said to restart kuadrant operator controller manager pod) …. This helps when requesting a token and returning null
+# rollout restart — this restarts the deployment to pick up the new argument without downtime
+oc rollout restart deployment/maas-api -n redhat-ods-applications
+oc rollout status deployment/maas-api -n redhat-ods-applications --timeout=120s
+
+
+echo "=========================================================================="
+echo " 7. overlays/07-maas-controller"
+echo " Creates Maas-controller deployment, Policies, RBAC and CRDS"
+echo ""
+
+echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/07-maas-controller"
+apply_firmly ${KUSTOMIZE_DIR}/overlays/07-maas-controller
+
+echo "=========================================================================="
+echo " 8. overlays/08-simulated-models"
+echo " Creates dummy models for testing"
+echo ""
+
+echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/08-simulated-models"
+apply_firmly ${KUSTOMIZE_DIR}/overlays/08-simulated-models
+
+
+echo "=========================================================================="
+echo " 9. overlays/09-maas-subscriptions"
+echo " Creates MaaS subscriptions for testing"
+echo ""
+
+echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/09-maas-subscriptions"
+apply_firmly ${KUSTOMIZE_DIR}/overlays/09-maas-subscriptions
+
+
+echo "=========================================================================="
+echo " 10. overlays/10-observability"
+echo " Creates Observability stack for testing"
+echo ""
+
+echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/10-observability"
+apply_firmly ${KUSTOMIZE_DIR}/overlays/10-observability
 
