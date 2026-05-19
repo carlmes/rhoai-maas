@@ -381,9 +381,16 @@ wait_for_install_plan_completion(){
     OPERATOR_SUB=$2
   fi
 
-  echo -n "Retrieving the InstallPlan name: "
-  INSTALL_PLAN_NAME=$(oc get sub ${OPERATOR_SUB} -n ${OPERATOR_NS} -o jsonpath='{.status.installPlanRef.name}')
-  echo "$INSTALL_PLAN_NAME was found in the namespace $OPERATOR_NS for subscription ${OPERATOR_SUB}"
+  echo -n "Retrieving the InstallPlan name for subscription ${OPERATOR_SUB} in namespace ${OPERATOR_NS}... "
+  INSTALL_PLAN_NAME=""
+  until [ -n "$INSTALL_PLAN_NAME" ]; do
+    INSTALL_PLAN_NAME=$(oc get sub ${OPERATOR_SUB} -n ${OPERATOR_NS} -o jsonpath='{.status.installPlanRef.name}' 2>/dev/null)
+    if [ -z "$INSTALL_PLAN_NAME" ]; then
+      echo -n "."
+      sleep 5
+    fi
+  done
+  echo "got Install Plan: ${INSTALL_PLAN_NAME}"
 
   echo -n "Retrieving the CSV name: "
   CSV_NAME=$(oc get installplan $INSTALL_PLAN_NAME -n ${OPERATOR_NS} -o jsonpath='{.spec.clusterServiceVersionNames[0]}')

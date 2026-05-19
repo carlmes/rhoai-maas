@@ -28,4 +28,4 @@ spec:
   name: nfd
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: nfd.v0.14.0
+  startingCSV: nfd.4.20.0-202604241817
