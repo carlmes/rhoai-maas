@@ -23,4 +23,4 @@ spec:
   name: tempo-product
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-#  startingCSV: tempo-operator.v0.20.0-3
+  startingCSV: tempo-operator.v0.20.0-3
