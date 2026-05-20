@@ -15,7 +15,8 @@ metadata:
     app.opendatahub.io/rhods-dashboard: "true"
 spec:
   dashboardConfig:
-    modelAsService: true
-    genAiStudio: true
-    observabilityDashboard: true
-    vLLMDeploymentOnMaaS: true
+    modelAsService: true          # Enables the Model as a Service tab in the dashboard.
+    genAiStudio: true             # Enables the Gen AI Studio tab in the dashboard.
+    observabilityDashboard: true  # Enables the Observability Dashboard tab in the dashboard.
+    vLLMDeploymentOnMaaS: true    # Enables the vLLM Deployment on MaaS tab in the dashboard.
+    maasAuthPolicies: true        # Enables the MaaS Auth Policies tab in the dashboard.
