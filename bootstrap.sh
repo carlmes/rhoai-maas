@@ -98,7 +98,7 @@ apply_firmly ${KUSTOMIZE_DIR}/overlays/05-odhdashboard
 
 echo "=========================================================================="
 echo " 6. overlays/06-postgres"
-echo " Creates Postgres instance for token storage WIP"
+echo " Creates MaaS Postgres instance used for API key lifecycle management."
 echo ""
 
 echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/06-postgres"
