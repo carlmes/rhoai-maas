@@ -163,6 +163,25 @@ echo ""
 echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/10-observability-dashboard-rhoai"
 apply_firmly ${KUSTOMIZE_DIR}/overlays/10-observability-dashboard-rhoai
 
+# Reference: https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.4/html/govern_llm_access_with_models-as-a-service/deploy-and-manage-models-as-a-service_maas#enable-maas-telemetry_maas-deploy
+echo "Enabling Telemetry for Models-as-a-Service"
+oc patch tenants.maas.opendatahub.io default-tenant -n models-as-a-service \
+  --type merge \
+  -p '{
+    "spec": {
+      "telemetry": {
+        "enabled": true,
+        "metrics": {
+          "captureOrganization": true,
+          "captureUser": false,
+          "captureGroup": false,
+          "captureModelUsage": true
+        }
+      }
+    }
+  }'
+
+
 echo "=========================================================================="
 echo " 11. Restarting rhoai-dashboard pods to pick up new ODH Dashboard config"
 echo ""
