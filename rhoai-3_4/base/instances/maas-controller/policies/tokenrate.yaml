@@ -105,7 +105,7 @@ metadata:
     app: limitador
     app.kubernetes.io/part-of: maas-observability
   name: limitador-metrics
-  namespace: rh-connectivity-link
+  namespace: kuadrant-system
 spec:
   endpoints:
   - interval: 30s

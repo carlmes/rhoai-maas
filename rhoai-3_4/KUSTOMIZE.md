@@ -24,7 +24,7 @@ Make sure csv for rhcl has: - name: ISTIO_GATEWAY_CONTROLLER_NAMES
 
 2. (After Step 2) Before applying Gateway (STEP 3) UPDATE HOST NAME in gateway yaml.
 
-3. Add annotation to __Kuadrant / rh-connectivity-link ns — service authorinio-authorinio-authorization__
+3. Add annotation to __Kuadrant / kuadrant-system ns — service authorinio-authorinio-authorization__
 
 ```
 annotations:

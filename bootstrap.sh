@@ -76,14 +76,14 @@ echo "Applying the configuration from: ${KUSTOMIZE_DIR}/overlays/04-rhoai"
 apply_firmly ${KUSTOMIZE_DIR}/overlays/04-rhoai
 
 echo "Annotating the authorino-authorino-authorization service with serving cert secret name"
-oc patch service authorino-authorino-authorization -n rh-connectivity-link --type=merge -p \
+oc patch service authorino-authorino-authorization -n kuadrant-system --type=merge -p \
   '{"metadata":{"annotations":{"service.beta.openshift.io/serving-cert-secret-name":"authorino-server-cert"}}}'
 
 echo "Restarting kuadrant-operator-controller-manager so it picks up the new cert"
-oc delete pod -n rh-connectivity-link -l control-plane=controller-manager --wait=false
+oc delete pod -n kuadrant-system -l control-plane=controller-manager --wait=false
 
 echo "Patching Authorino CR to enable TLS with the serving cert"
-oc patch authorino authorino -n rh-connectivity-link --type=merge -p \
+oc patch authorino authorino -n kuadrant-system --type=merge -p \
   '{"spec":{"clusterWide":true,"healthz":{},"listener":{"ports":{},"tls":{"certSecretRef":{"name":"authorino-server-cert"},"enabled":true}}}}'
 
 
