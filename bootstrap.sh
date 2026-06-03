@@ -28,7 +28,7 @@ apply_firmly ${KUSTOMIZE_DIR}/overlays/01-operators
 wait_for_install_plan_completion "openshift-nfd" "nfd"
 wait_for_install_plan_completion "nvidia-gpu-operator" "gpu-operator-certified"
 wait_for_install_plan_completion "cert-manager-operator" "openshift-cert-manager-operator"
-wait_for_install_plan_completion "rh-connectivity-link" "rhcl-operator"
+wait_for_install_plan_completion "kuadrant-system" "rhcl-operator"
 wait_for_install_plan_completion "openshift-lws-operator" "leader-worker-set"
 wait_for_install_plan_completion "redhat-ods-operator" "rhods-operator"
 wait_for_install_plan_completion "openshift-operators" "servicemeshoperator3"
