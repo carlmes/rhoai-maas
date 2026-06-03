@@ -37,9 +37,9 @@ echo "Patching ClusterServiceVersion for Red Hat Connectivity Link:"
 echo "   - name: ISTIO_GATEWAY_CONTROLLER_NAMES"
 echo "     value: 'istio.io/gateway-controller,openshift.io/gateway-controller/v1'"
 echo ""
-ENV_INDEX=$(oc get ClusterServiceVersion rhcl-operator.v1.3.3 -n rh-connectivity-link -o json | \
+ENV_INDEX=$(oc get ClusterServiceVersion rhcl-operator.v1.3.4 -n kuadrant-system -o json | \
   jq '.spec.install.spec.deployments[0].spec.template.spec.containers[0].env | map(.name) | index("ISTIO_GATEWAY_CONTROLLER_NAMES")')
-oc patch ClusterServiceVersion rhcl-operator.v1.3.3 -n rh-connectivity-link --type=json -p \
+oc patch ClusterServiceVersion rhcl-operator.v1.3.4 -n kuadrant-system --type=json -p \
   "[{\"op\":\"replace\",\"path\":\"/spec/install/spec/deployments/0/spec/template/spec/containers/0/env/${ENV_INDEX}/value\",\"value\":\"istio.io/gateway-controller,openshift.io/gateway-controller/v1\"}]"
 
 echo "=========================================================================="
