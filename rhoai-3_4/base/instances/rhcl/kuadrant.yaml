@@ -4,4 +4,6 @@ metadata:
   name: kuadrant
   namespace: kuadrant-system
 spec:
-  observability: {}
+  observability: {
+    enable: true
+  }
