@@ -42,6 +42,10 @@ ENV_INDEX=$(oc get ClusterServiceVersion rhcl-operator.v1.3.4 -n kuadrant-system
 oc patch ClusterServiceVersion rhcl-operator.v1.3.4 -n kuadrant-system --type=json -p \
   "[{\"op\":\"replace\",\"path\":\"/spec/install/spec/deployments/0/spec/template/spec/containers/0/env/${ENV_INDEX}/value\",\"value\":\"istio.io/gateway-controller,openshift.io/gateway-controller/v1\"}]"
 
+echo "Enabling kuadrant-console-plugin in the OpenShift Console"
+oc patch console.operator.openshift.io cluster --type=json -p \
+  '[{"op":"add","path":"/spec/plugins/-","value":"kuadrant-console-plugin"}]'
+
 echo "=========================================================================="
 echo " 2. overlays/02-nfd-nvidia-lws-instances"
 echo " Create NFD instance and NVIDIA ClusterPolicy (GPU nodes) and Lead Worker Set Instance"
