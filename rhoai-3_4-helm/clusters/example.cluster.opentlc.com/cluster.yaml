@@ -1,0 +1,5 @@
+global:
+  cluster:
+    name: cluster-updateme
+    baseDomain: opentlc.com
+  toolsImage: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
