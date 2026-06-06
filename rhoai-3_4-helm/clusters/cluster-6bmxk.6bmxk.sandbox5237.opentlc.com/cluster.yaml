@@ -1,0 +1,5 @@
+global:
+  cluster:
+    name: cluster-6bmxk
+    baseDomain: 6bmxk.sandbox5237.opentlc.com
+  toolsImage: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
