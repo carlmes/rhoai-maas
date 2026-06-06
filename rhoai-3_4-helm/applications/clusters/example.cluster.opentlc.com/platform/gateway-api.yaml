@@ -6,15 +6,18 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "3"
 spec:
+  project: rhoai-platform
   destination:
     name: in-cluster
     namespace: openshift-ingress
   source:
     path: rhoai-3_4-helm/charts/gateway-api
-    repoURL: ${ARGO_GIT_URL}
-    targetRevision: ${ARGO_GIT_REVISION}
+    repoURL: https://github.com/carlmes/rhoai-maas.git
+    targetRevision: main
     helm:
-      valueFiles: []
+      valueFiles:
+        - ../../clusters/example.cluster.opentlc.com/cluster.yaml
+        - ../../clusters/example.cluster.opentlc.com/platform/values/gateway-api/values.yaml
   syncPolicy:
     automated:
       prune: true

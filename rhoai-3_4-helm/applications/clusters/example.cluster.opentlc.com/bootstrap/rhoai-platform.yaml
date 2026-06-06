@@ -1,0 +1,24 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rhoai-platform
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: rhoai-platform
+  destination:
+    name: in-cluster
+    namespace: openshift-gitops
+  source:
+    path: rhoai-3_4-helm/applications/clusters/example.cluster.opentlc.com/platform
+    repoURL: https://github.com/carlmes/rhoai-maas.git
+    targetRevision: main
+    directory:
+      recurse: false
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

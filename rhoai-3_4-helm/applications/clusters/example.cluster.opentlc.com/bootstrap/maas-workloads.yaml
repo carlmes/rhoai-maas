@@ -1,0 +1,24 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: maas-workloads
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  project: maas-workloads
+  destination:
+    name: in-cluster
+    namespace: openshift-gitops
+  source:
+    path: rhoai-3_4-helm/applications/clusters/example.cluster.opentlc.com/workloads
+    repoURL: https://github.com/carlmes/rhoai-maas.git
+    targetRevision: main
+    directory:
+      recurse: false
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

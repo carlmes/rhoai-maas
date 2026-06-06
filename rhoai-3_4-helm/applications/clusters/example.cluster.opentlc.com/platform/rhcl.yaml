@@ -6,15 +6,18 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
+  project: rhoai-platform
   destination:
     name: in-cluster
     namespace: kuadrant-system
   source:
     path: rhoai-3_4-helm/charts/rhcl
-    repoURL: ${ARGO_GIT_URL}
-    targetRevision: ${ARGO_GIT_REVISION}
+    repoURL: https://github.com/carlmes/rhoai-maas.git
+    targetRevision: main
     helm:
-      valueFiles: []
+      valueFiles:
+        - ../../clusters/example.cluster.opentlc.com/cluster.yaml
+        - ../../clusters/example.cluster.opentlc.com/platform/values/rhcl/values.yaml
   syncPolicy:
     automated:
       prune: true

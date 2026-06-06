@@ -1,0 +1,28 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: maas-subscriptions
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+spec:
+  project: maas-workloads
+  destination:
+    name: in-cluster
+    namespace: models-as-a-service
+  sources:
+    - repoURL: https://github.com/carlmes/rhoai-maas.git
+      targetRevision: main
+      path: rhoai-3_4-helm/charts/maas-subscriptions
+      helm:
+        valueFiles:
+          - $workloads/clusters/example.cluster.opentlc.com/values/maas-subscriptions/values.yaml
+    - repoURL: https://github.com/example/maas-workloads-gitops.git
+      targetRevision: main
+      ref: workloads
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -6,15 +6,18 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "5"
 spec:
+  project: rhoai-platform
   destination:
     name: in-cluster
     namespace: redhat-ods-applications
   source:
     path: rhoai-3_4-helm/charts/maas-postgres
-    repoURL: ${ARGO_GIT_URL}
-    targetRevision: ${ARGO_GIT_REVISION}
+    repoURL: https://github.com/carlmes/rhoai-maas.git
+    targetRevision: main
     helm:
-      valueFiles: []
+      valueFiles:
+        - ../../clusters/example.cluster.opentlc.com/cluster.yaml
+        - ../../clusters/example.cluster.opentlc.com/platform/values/maas-postgres/values.yaml
   syncPolicy:
     automated:
       prune: true
