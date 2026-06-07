@@ -153,6 +153,27 @@ The gateway hostname is templated from cluster globals:
 maas.apps.{cluster.name}.{cluster.baseDomain}
 ```
 
+### Disconnected clusters (optional)
+
+For air-gapped or disconnected environments, set `disconnected.enabled: true` in `clusters/{cluster}/cluster.yaml` and update the registry/image fields for that cluster:
+
+```yaml
+disconnected:
+  enabled: true
+  wasmShimImage: registry.example.com/rhcl-1/wasm-shim-rhel9@sha256:...
+  protectedRegistry: registry.example.com
+  gatewayConfig:
+    wasmInsecureRegistries: registry.example.com
+    serviceType: ClusterIP  # lab only; omit on production clusters
+```
+
+This enables:
+
+- **`rhcl`**: copies `pull-secret` to `wasm-plugin-pull-secret` and patches the operator subscription (`RELATED_IMAGE_WASMSHIM`, `PROTECTED_REGISTRY`) — bootstrap.sh step 11
+- **`gateway-api`**: creates `default-gateway-config` with `WASM_INSECURE_REGISTRIES` for the gateway istio-proxy
+
+Leave `disconnected.enabled: false` (default) on connected clusters such as OpenTLC sandboxes.
+
 ### Workload charts
 
 1. `charts/{app}/values.yaml` — chart defaults (platform repo)
@@ -245,6 +266,8 @@ All imperative steps from [`bootstrap.sh`](../bootstrap.sh) are encoded in the H
 | Observability DSCI + cluster monitoring | `openshift-ai` | DSCInitialization + ConfigMap |
 | `default-tenant` telemetry | `maas-subscriptions` | `tenant-telemetry.yaml` |
 | Restart `rhods-dashboard` | `openshift-ai` | Job `restart-rhods-dashboard` |
+| WASM shim disconnected workaround | `rhcl` | Job `apply-wasm-shim-workaround` (optional via `disconnected.enabled`) |
+| Gateway `default-gateway-config` (WASM insecure registries) | `gateway-api` | ConfigMap `default-gateway-config` (optional via `disconnected.enabled`) |
 
 Post-install Jobs use the cluster `toolsImage` (must include `oc` and `jq`) and run as Helm post-install/post-upgrade hooks (ArgoCD sync-wave ordered).
 
