@@ -194,6 +194,10 @@ echo ""
 # using the OpenShift internal image mirror registry correctly. This should be resolved in future updates, and can be removed.
 # See: https://redhat.atlassian.net/browse/CONNLINK-805
 
+oc get secret pull-secret -n openshift-config -o json | \
+jq '-metadata namespace = "openshift-ingress" | •metadata.name = "wasm-plugin-pull-secret" | \
+oc apply -f -
+
 oc patch subscription rhcl-operator -n kuadrant-system --type merge -p '{
   "spec": {
     "config": {
