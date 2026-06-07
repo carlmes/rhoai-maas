@@ -187,7 +187,33 @@ oc patch tenants.maas.opendatahub.io default-tenant -n models-as-a-service \
 
 
 echo "=========================================================================="
-echo " 11. Restarting rhoai-dashboard pods to pick up new ODH Dashboard config"
+echo " 11. Applying WASM workaround patch for RHOAI 3.4 disconnected cluster"
+echo ""
+
+# This is a temporary workaround for an issue with RHOAI 3.4 in a disconnected cluster, where the WASM shim plugin is not
+# using the OpenShift internal image mirror registry correctly. This should be resolved in future updates, and can be removed.
+# See: https://redhat.atlassian.net/browse/CONNLINK-805
+
+oc patch subscription rhcl-operator -n kuadrant-system --type merge -p '{
+  "spec": {
+    "config": {
+      "env": [
+        {
+          "name": "RELATED_IMAGE_WASMSHIM",
+          "value": "registry.customer.com/rhcl-1/wasm-shim-rhel9@sha256:4b8cd7dea4d9cd3c7170af872c229e206155691e7dbb4a90c64699ccecc7ccbb"
+        },
+        {
+          "name": "PROTECTED_REGISTRY",
+          "value": "registry.customer.com"
+        }
+      ]
+    }
+  }
+}'
+
+
+echo "=========================================================================="
+echo " 12. Restarting rhoai-dashboard pods to pick up new ODH Dashboard config"
 echo ""
 
 oc rollout restart deployment/rhods-dashboard -n redhat-ods-applications

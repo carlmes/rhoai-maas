@@ -3,4 +3,5 @@ kind: Kustomization
 
 resources:
   - gatewayclass.yaml
+  - default-gateway-config.yaml
   - maas-default-gateway.yaml
