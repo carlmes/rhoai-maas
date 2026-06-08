@@ -1,0 +1,20 @@
+operatorNamespace: cert-manager-operator
+
+global:
+  toolsImage: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
+  cluster:
+    name: cluster
+    baseDomain: example.com
+
+ca:
+  enabled: false
+
+acme: {}
+
+certificates:
+  api:
+    managed: false
+  router:
+    managed: false
+  nlbRouter:
+    managed: false

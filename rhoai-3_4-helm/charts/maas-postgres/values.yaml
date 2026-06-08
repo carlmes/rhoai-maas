@@ -1,0 +1,26 @@
+namespace: redhat-ods-applications
+
+global:
+  toolsImage: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
+
+credentials:
+  user: admin
+  password: admin123
+  database: maas
+
+storage:
+  size: 3Gi
+
+image: registry.redhat.io/rhel9/postgresql-16:latest
+
+labels:
+  app: postgres
+  purpose: poc
+
+# bootstrap.sh: create maas-db-config from postgres-creds and restart maas-api
+maasDbConfig:
+  enabled: true
+  postgresSecretName: postgres-creds
+  maasDbSecretName: maas-db-config
+  postgresServiceName: postgres
+  postgresPort: 5432

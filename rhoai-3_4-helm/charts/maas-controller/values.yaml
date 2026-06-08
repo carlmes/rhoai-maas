@@ -1,0 +1,17 @@
+gateway:
+  name: maas-default-gateway
+  namespace: openshift-ingress
+
+policies:
+  defaultDeny:
+    enabled: true
+  telemetry:
+    enabled: true
+  rateLimit:
+    enabled: true
+  tokenRateLimit:
+    enabled: true
+  serviceMonitor:
+    enabled: true
+  destinationRule:
+    enabled: true
