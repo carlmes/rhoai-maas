@@ -5,7 +5,8 @@ manifest.yaml
 venv/
 dictionary.dic
 tmp/
-**/charts/
+# Packaged Helm subchart dependencies (from helm dependency update)
+**/charts/*.tgz
 .vscode/
 
 # DrawIO backups
