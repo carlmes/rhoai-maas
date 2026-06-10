@@ -1,4 +1,8 @@
-{{- if .Values.maasDbConfig.enabled }}
+{{- $pg := .Values.maas.postgres }}
+{{- $db := $pg.dbConfig }}
+{{- $needsJob := and (not $db.existingSecret) (or $pg.deploy.enabled $db.credentialsSecret $db.host) }}
+{{- if $needsJob }}
+{{- $mode := ternary "bundled" "external" $pg.deploy.enabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -67,14 +71,35 @@ spec:
           env:
             - name: POSTGRES_NAMESPACE
               value: {{ .Values.namespace | quote }}
-            - name: POSTGRES_SECRET
-              value: {{ .Values.maasDbConfig.postgresSecretName | quote }}
             - name: MAAS_DB_SECRET
-              value: {{ .Values.maasDbConfig.maasDbSecretName | quote }}
+              value: {{ $db.secretName | quote }}
+            - name: MAAS_DB_CONFIG_MODE
+              value: {{ $mode | quote }}
+            {{- if $pg.deploy.enabled }}
+            - name: POSTGRES_SECRET
+              value: {{ $db.postgresSecretName | quote }}
             - name: POSTGRES_SERVICE
-              value: {{ .Values.maasDbConfig.postgresServiceName | quote }}
+              value: {{ $db.postgresServiceName | quote }}
             - name: POSTGRES_PORT
-              value: {{ .Values.maasDbConfig.postgresPort | quote }}
+              value: {{ $db.port | quote }}
+            {{- else }}
+            - name: CREDENTIALS_SECRET
+              value: {{ $db.credentialsSecret | quote }}
+            - name: CONNECTION_URL_KEY
+              value: {{ $db.connectionUrlKey | quote }}
+            - name: POSTGRES_HOST
+              value: {{ $db.host | quote }}
+            - name: POSTGRES_PORT
+              value: {{ $db.port | quote }}
+            - name: POSTGRES_DB
+              value: {{ $db.database | quote }}
+            - name: POSTGRES_USER
+              value: {{ $db.user | quote }}
+            - name: PASSWORD_KEY
+              value: {{ $db.passwordKey | quote }}
+            - name: SSLMODE
+              value: {{ $db.sslmode | quote }}
+            {{- end }}
           volumeMounts:
             - name: scripts
               mountPath: /scripts

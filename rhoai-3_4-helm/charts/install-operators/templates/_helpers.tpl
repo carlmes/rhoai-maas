@@ -57,6 +57,10 @@ Subscription manifest
 {{- $operator := .operator }}
 {{- $config := .config }}
 {{- $root := .root }}
+{{- $installPlanApproval := $config.installPlanApproval | default "Automatic" }}
+{{- if and (eq $installPlanApproval "Manual") (not $config.startingCSV) }}
+{{- fail (printf "Operator %s requires startingCSV when installPlanApproval is Manual" $operator) }}
+{{- end }}
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
@@ -64,9 +68,13 @@ metadata:
   namespace: {{ $config.namespace | default "openshift-operators" }}
   labels:
     {{- include "install-operators.labels" $root | nindent 4 }}
+  {{- with $config.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   channel: {{ $config.channel }}
-  installPlanApproval: {{ $config.installPlanApproval | default "Automatic" }}
+  installPlanApproval: {{ $installPlanApproval }}
   name: {{ $operator }}
   source: {{ $config.catalog | default "redhat-operators" }}
   sourceNamespace: openshift-marketplace

@@ -6,18 +6,21 @@ install-observability:
   operators:
     tempo-product:
       channel: stable
+      installPlanApproval: Manual
       namespace: openshift-tempo-operator
       operatorGroup:
         enabled: true
       startingCSV: tempo-operator.v0.20.0-3
     cluster-observability-operator:
       channel: stable
+      installPlanApproval: Manual
       namespace: openshift-cluster-observability-operator
       operatorGroup:
         enabled: true
       startingCSV: cluster-observability-operator.v1.4.0
     opentelemetry-product:
       channel: stable
+      installPlanApproval: Manual
       namespace: openshift-opentelemetry-operator
       operatorGroup:
         enabled: true

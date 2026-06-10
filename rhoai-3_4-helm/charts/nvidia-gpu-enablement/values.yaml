@@ -1,3 +1,18 @@
+install-nvidia-operators:
+  enabled: true
+  operators:
+    nfd:
+      channel: stable
+      installPlanApproval: Manual
+      namespace: openshift-nfd
+      startingCSV: nfd.4.20.0-202605260442
+    gpu-operator-certified:
+      channel: v26.3
+      catalog: certified-operators
+      installPlanApproval: Manual
+      namespace: nvidia-gpu-operator
+      startingCSV: gpu-operator-certified.v26.3.2
+
 nfd:
   channel: stable
   operand:

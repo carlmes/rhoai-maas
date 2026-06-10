@@ -10,6 +10,7 @@ install-rhoai:
   operators:
     rhods-operator:
       channel: stable-3.x
+      installPlanApproval: Manual
       namespace: redhat-ods-operator
       startingCSV: rhods-operator.3.4.0
       operatorGroup:
@@ -40,16 +41,9 @@ dataScienceCluster:
   components:
     kserve:
       managementState: Managed
-      defaultDeploymentMode: RawDeployment
       nim:
         managementState: Managed
       rawDeploymentServiceConfig: Headless
-      serving:
-        ingressGateway:
-          certificate:
-            type: OpenshiftDefaultIngress
-        managementState: Removed
-        name: knative-serving
       modelsAsService:
         managementState: Managed
     modelregistry:

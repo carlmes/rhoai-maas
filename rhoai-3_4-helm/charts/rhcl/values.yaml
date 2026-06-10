@@ -6,6 +6,7 @@ install-rhcl:
   operators:
     rhcl-operator:
       channel: stable
+      installPlanApproval: Manual
       namespace: kuadrant-system
       operatorGroup:
         enabled: true

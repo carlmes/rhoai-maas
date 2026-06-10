@@ -13,3 +13,21 @@ disconnected:
   gatewayConfig:
     wasmInsecureRegistries: registry.customer.com
     serviceType: ClusterIP
+
+# MaaS PostgreSQL: deploy in-cluster for sandbox/POC; use external day2-managed DB in production.
+maas:
+  postgres:
+    deploy:
+      enabled: true
+    dbConfig:
+      secretName: maas-db-config
+      # Production example (deploy.enabled: false):
+      # existingSecret: maas-db-config
+      # Or reference a credentials secret and connection endpoints:
+      # credentialsSecret: maas-postgres-credentials
+      # host: postgres.production.example.com
+      # port: 5432
+      # database: maas
+      # user: maas
+      # passwordKey: password
+      # sslmode: require

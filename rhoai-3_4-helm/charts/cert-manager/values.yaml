@@ -1,5 +1,16 @@
 operatorNamespace: cert-manager-operator
 
+install-cert-manager:
+  enabled: true
+  operators:
+    openshift-cert-manager-operator:
+      channel: stable-v1
+      installPlanApproval: Manual
+      namespace: cert-manager-operator
+      startingCSV: cert-manager-operator.v1.19.0
+      annotations:
+        argocd.argoproj.io/compare-options: IgnoreExtraneous
+
 global:
   toolsImage: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
   cluster:
