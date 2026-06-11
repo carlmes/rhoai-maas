@@ -1,24 +1,3 @@
-{{- if .Values.policies.telemetry.enabled }}
----
-apiVersion: extensions.kuadrant.io/v1alpha1
-kind: TelemetryPolicy
-metadata:
-  labels:
-    app.kubernetes.io/part-of: maas-observability
-  name: user-group
-  namespace: {{ .Values.gateway.namespace }}
-spec:
-  metrics:
-    default:
-      labels:
-        model: responseBodyJSON("/model")
-        tier: auth.identity.tier
-        user: auth.identity.userid
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: Gateway
-    name: {{ .Values.gateway.name }}
-{{- end }}
 {{- if .Values.policies.rateLimit.enabled }}
 ---
 apiVersion: kuadrant.io/v1
@@ -119,21 +98,4 @@ spec:
   selector:
     matchLabels:
       app: limitador
-{{- end }}
-{{- if .Values.policies.destinationRule.enabled }}
----
-apiVersion: networking.istio.io/v1
-kind: DestinationRule
-metadata:
-  name: maas-api-backend-tls
-  namespace: {{ .Values.gateway.namespace }}
-spec:
-  host: maas-api.opendatahub.svc.cluster.local
-  trafficPolicy:
-    portLevelSettings:
-    - port:
-        number: 8443
-      tls:
-        insecureSkipVerify: true
-        mode: SIMPLE
 {{- end }}

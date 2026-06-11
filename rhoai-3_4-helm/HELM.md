@@ -31,11 +31,11 @@ rhoai-3_4-helm/
 | 3 | `gateway-api` | GatewayClass + maas-default-gateway |
 | 4 | `openshift-ai` | RHOAI operator, DSC, dashboard, observability DSCI |
 | 5 | `maas-postgres` | Optional in-cluster Postgres + `maas-db-config` for MaaS API |
-| 6 | `maas-controller` | MaaS CRDs, RBAC, Kuadrant policies |
+| 6 | `maas-controller` | Kuadrant rate limit policies and Limitador metrics (CRDs/RBAC/deployment from wave 4) |
 | 7 | `llmisvc` | LLMInferenceService models |
 | 8 | `maas-subscriptions` | MaaSModelRef, MaaSAuthPolicy, MaaSSubscription |
 
-## Quick Start
+Wave 4 before wave 5 matches the Kustomize/bootstrap overlay order (`04-rhoai` then `06-postgres`). The DataScienceCluster `modelsAsService` component expects a `maas-db-config` secret that wave 5 creates — see [Expected conditions between waves 4 and 5](#expected-conditions-between-waves-4-and-5) below.
 
 ### 1. Configure your cluster
 
@@ -103,14 +103,26 @@ helm upgrade --install maas-subscriptions $CHARTS/maas-subscriptions -n models-a
 
 Wait for each wave's operators and post-install Jobs to complete before proceeding to the next wave.
 
+### Expected conditions between waves 4 and 5
+
+After wave 4 (`openshift-ai`), the DataScienceCluster may report `ModelsAsServiceReady: False` with:
+
+```
+database Secret 'maas-db-config' not found in namespace 'redhat-ods-applications'
+```
+
+This is **expected** until wave 5 (`maas-postgres`) runs. Wave 4 enables MaaS in the DSC; wave 5 provisions PostgreSQL (when `maas.postgres.deploy.enabled: true`) and creates the `maas-db-config` secret. Proceed to wave 5 — do not treat this as a failed wave 4 install.
+
+If using an external database (`maas.postgres.deploy.enabled: false`), provision `maas-db-config` before wave 4, or accept the same transient condition until the secret exists.
+
 ### Platform readiness checklist
 
 Before installing workload charts (waves 7–8), confirm:
 
 - [ ] `maas-default-gateway` is programmed in `openshift-ingress`
-- [ ] DataScienceCluster and RHOAI dashboard are ready
+- [ ] DataScienceCluster and RHOAI dashboard are ready (MaaS may stay NotReady until `maas-db-config` exists — see above)
 - [ ] `maas-controller` Kuadrant policies exist
-- [ ] `maas-db-config` secret exists (from in-cluster Postgres, external credentials, or day2 provisioning)
+- [ ] `maas-db-config` secret exists (from wave 5 in-cluster Postgres, external credentials, or day2 provisioning)
 - [ ] GPU nodes are labeled if deploying GPU models (`nvidia.com/gpu.present=true`)
 
 ## Value Layering
@@ -212,7 +224,7 @@ All imperative steps from [`bootstrap.sh`](../bootstrap.sh) are encoded in the H
 | Simulated LLM models | `llmisvc` | Multi-model templates |
 | MaaS subscriptions | `maas-subscriptions` | Subscription templates |
 | Observability DSCI + cluster monitoring | `openshift-ai` | DSCInitialization + ConfigMap |
-| `default-tenant` telemetry | `maas-subscriptions` | `tenant-telemetry.yaml` |
+| `default-tenant` telemetry | `maas-subscriptions` | Job `patch-tenant-telemetry` (patches operator-created Tenant) |
 | Restart `rhods-dashboard` | `openshift-ai` | Job `restart-rhods-dashboard` |
 | WASM shim disconnected workaround | `rhcl` | Job `apply-wasm-shim-workaround` (optional via `disconnected.enabled`) |
 | Gateway `default-gateway-config` (WASM insecure registries) | `gateway-api` | ConfigMap `default-gateway-config` (optional via `disconnected.enabled`) |

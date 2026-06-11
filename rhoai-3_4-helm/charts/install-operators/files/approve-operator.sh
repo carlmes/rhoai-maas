@@ -10,13 +10,13 @@
 
 function approve_install_plan {
   set -x
-  oc patch installplan "$1" --patch '{"spec": {"approved": true}}' --type merge
+  oc patch installplan "$1" -n {{ $config.namespace | default "openshift-operators" }} --patch '{"spec": {"approved": true}}' --type merge
   { set +x ; } 2>/dev/null
 }
 
 function find_install_plans {
   for csv in {{ join " " $approveCSVs }}; do
-    oc get installplan -l operators.coreos.com/{{ $operator }}.{{ $config.namespace | default "openshift-operators" }} -ojsonpath='{.items[?(@.spec.clusterServiceVersionNames contains "'"$csv"'")].metadata.name}' 2>/dev/null
+    oc get installplan -n {{ $config.namespace | default "openshift-operators" }} -ojsonpath='{.items[?(@.spec.clusterServiceVersionNames contains "'"$csv"'")].metadata.name}' 2>/dev/null
     echo
   done
 }
@@ -30,7 +30,13 @@ while true; do
   else
     echo
     for install_plan in "${install_plans[@]}"; do
-      approve_install_plan "$install_plan"
+      if [ -z "$install_plan" ]; then
+        continue
+      fi
+      approved=$(oc get installplan "$install_plan" -n {{ $config.namespace | default "openshift-operators" }} -o jsonpath='{.spec.approved}')
+      if [ "$approved" != "true" ]; then
+        approve_install_plan "$install_plan"
+      fi
     done
     break
   fi

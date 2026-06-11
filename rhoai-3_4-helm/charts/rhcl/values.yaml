@@ -22,6 +22,7 @@ kuadrant:
 authorino:
   overwrite: true
   serviceTls: true
+  certSecretName: authorino-server-cert
   spec:
     clusterWide: true
     healthz: {}
@@ -31,6 +32,11 @@ authorino:
         certSecretRef:
           name: authorino-server-cert
         enabled: true
+    oidcServer:
+      tls:
+        enabled: true
+        certSecretRef:
+          name: authorino-server-cert
 
 # bootstrap.sh: patch RHCL CSV ISTIO_GATEWAY_CONTROLLER_NAMES
 csvPatch:
