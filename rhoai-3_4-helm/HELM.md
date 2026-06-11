@@ -28,9 +28,9 @@ rhoai-3_4-helm/
 | 1    | `observability-operators` | Tempo, Cluster Observability, OpenTelemetry operators                                 |
 | 2    | `nvidia-gpu-enablement`   | NFD + NVIDIA GPU operator; instances via post-install Jobs                          |
 | 2    | `leaderworkerset`         | Leader Worker Set operator; instance via post-install Job                             |
-| 2    | `rhcl`                    | Red Hat Connectivity Link + Kuadrant                                                  |
+| 2    | `rhcl`                    | Red Hat Connectivity Link operator; Kuadrant via post-install Job                     |
 | 3    | `gateway-api`             | GatewayClass + maas-default-gateway                                                   |
-| 4    | `openshift-ai`            | RHOAI operator, DSC, dashboard, observability DSCI                                    |
+| 4    | `openshift-ai`            | RHOAI operator; DSC/DSCI and dashboard config via post-install Jobs                   |
 | 5    | `maas-postgres`           | Optional in-cluster Postgres + `maas-db-config` for MaaS API                          |
 | 6    | `maas-controller`         | Kuadrant rate limit policies and Limitador metrics (CRDs/RBAC/deployment from wave 4) |
 | 7    | `llmisvc`                 | LLMInferenceService models                                                            |
@@ -213,10 +213,12 @@ All imperative steps from `[bootstrap.sh](../bootstrap.sh)` are encoded in the H
 
 | bootstrap.sh step                                           | Helm chart           | Implementation                                                           |
 | ----------------------------------------------------------- | -------------------- | ------------------------------------------------------------------------ |
+| Kuadrant CR                                                 | `rhcl`               | Job `apply-kuadrant` (post-install; waits for operator CRD)            |
 | RHCL CSV `ISTIO_GATEWAY_CONTROLLER_NAMES` patch             | `rhcl`               | Job `patch-rhcl-csv`                                                     |
 | Enable `kuadrant-console-plugin`                            | `rhcl`               | Job `enable-console-plugin`                                              |
 | Gateway hostname patch                                      | `gateway-api`        | Templated from `cluster.yaml`                                            |
-| DataScienceCluster + Authorino NetworkPolicy                | `openshift-ai`       | Templates                                                                |
+| DSCInitialization + DataScienceCluster                      | `openshift-ai`       | Jobs `apply-dsci`, `apply-dsc` (post-install; wait for operator CRDs)    |
+| Authorino NetworkPolicy                                     | `openshift-ai`       | Template                                                                 |
 | Authorino service serving-cert annotation                   | `rhcl`               | `service-authorino.yaml` (SSA)                                           |
 | Authorino TLS spec                                          | `rhcl`               | `authorino.yaml`                                                         |
 | Restart kuadrant-operator-controller                        | `rhcl`               | Job `restart-kuadrant-operator`                                          |

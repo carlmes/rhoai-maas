@@ -6,23 +6,21 @@ metadata:
   namespace: redhat-ods-applications
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
   name: apply-dsc
-  namespace: redhat-ods-applications
 rules:
   - apiGroups: ["datasciencecluster.opendatahub.io"]
     resources: ["datascienceclusters"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
   name: apply-dsc
-  namespace: redhat-ods-applications
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: ClusterRole
   name: apply-dsc
 subjects:
   - kind: ServiceAccount
@@ -41,7 +39,6 @@ data:
     kind: DataScienceCluster
     metadata:
       name: default-dsc
-      namespace: redhat-ods-applications
     {{- if .Values.dataScienceCluster.components }}
     spec:
       components:
