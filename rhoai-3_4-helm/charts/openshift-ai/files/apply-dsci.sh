@@ -1,9 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-MANIFEST="/config/odh-dashboard-config.yaml"
+MANIFEST="/config/dsci.yaml"
 
-echo "Waiting for OdhDashboardConfig API..."
+echo "Waiting for DSCInitialization API..."
 while true; do
   if output=$(oc apply -f "${MANIFEST}" 2>&1); then
     echo "${output}"
@@ -13,4 +13,4 @@ while true; do
   sleep 10
 done
 
-echo "OdhDashboardConfig applied"
+echo "DSCInitialization applied"
