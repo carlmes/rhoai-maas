@@ -5,23 +5,21 @@ metadata:
   namespace: openshift-lws-operator
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
   name: apply-leaderworkerset
-  namespace: openshift-lws-operator
 rules:
   - apiGroups: ["operator.openshift.io"]
     resources: ["leaderworkersetoperators"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
   name: apply-leaderworkerset
-  namespace: openshift-lws-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: ClusterRole
   name: apply-leaderworkerset
 subjects:
   - kind: ServiceAccount
@@ -40,7 +38,6 @@ data:
     kind: LeaderWorkerSetOperator
     metadata:
       name: cluster
-      namespace: openshift-lws-operator
     {{- with .Values.spec }}
     spec:
       {{- toYaml . | nindent 6 }}
